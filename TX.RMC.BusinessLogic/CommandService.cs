@@ -8,6 +8,7 @@ public class CommandService
 {
     public async Task<object> GetAsync(Guid id)
     {
+        // TODO: Implement this method
         throw new NotImplementedException();
     }
 
@@ -19,6 +20,7 @@ public class CommandService
 
     public async Task<bool> UpdateAsync(EComands command, string robot, Guid? v)
     {
+        // TODO: Implement this method
         throw new NotImplementedException();
     }
 }

@@ -14,11 +14,17 @@ using TX.RMC.Api.Models;
 using TX.RMC.Api.Utils;
 using TX.RMC.BusinessLogic;
 
+/// <summary>
+/// Service for identity management.
+/// </summary>
 public class IdentityService(BusinessLogic.LoginService businessLogic)
 {
     private readonly LoginService businessLogic = businessLogic;
 
-
+    /// <summary>
+    /// Login user.
+    /// </summary>
+    /// <returns>Authentication Response</returns>
     public async Task<AuthenticationResponse> LoginAsync(string username, string password, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

@@ -2,8 +2,14 @@
 
 using System.Security.Claims;
 
+/// <summary>
+/// Extension methods for <see cref="ClaimsPrincipal"/>.
+/// </summary>
 public static class ClaimsPrincipalExtensions
 {
+    /// <summary>
+    /// Get the user id from the claims principal.
+    /// </summary>
     public static Guid? GetId(this ClaimsPrincipal user)
     {
         if (user?.Identity?.IsAuthenticated ?? false)
@@ -20,6 +26,9 @@ public static class ClaimsPrincipalExtensions
         return null;
     }
 
+    /// <summary>
+    /// Get the user name from the claims principal.
+    /// </summary>
     public static string? GetNameIdentifier(this ClaimsPrincipal user)
     {
         if (user?.Identity?.IsAuthenticated ?? false)

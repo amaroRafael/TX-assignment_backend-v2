@@ -5,6 +5,9 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Helper class for API security.
+    /// </summary>
     public static class ApiSecurityHelper
     {
         public const string OauthKey = "t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeThWm";
