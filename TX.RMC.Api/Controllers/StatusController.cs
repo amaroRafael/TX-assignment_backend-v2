@@ -8,15 +8,26 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
-public class StatusController(StatusService statusService) : ControllerBase
+public class StatusController(RobotService robotService) : ControllerBase
 {
-    private readonly StatusService statusService = statusService;
+    private readonly RobotService robotService = robotService;
 
+    /// <summary>
+    /// Gets the status of the robot
+    /// </summary>
+    /// <param name="robot">The robot name identity.</param>
+    /// <returns>THe current status.</returns>
+    /// <remarks>
+    /// 
+    ///     GET /status/[robot]
+    ///     Authorization Bearer [token]
+    /// 
+    /// </remarks>
+    /// <response code="200">Returns the robot status.</response>
     [HttpGet("{robot}")]
     public async Task<IActionResult> Get(string robot)
     {
-        string status = await this.statusService.GetStatusAsync(robot);
-
+        string status = await this.robotService.GetStatusAsync(robot);
         return new OkObjectResult(new { robot, status });
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace TX.RMC.Api.Models;
 
-using TX.RMC.BusinessLogic.Enumerators;
+using TX.RMC.DataAccess.Core.Enumerators;
 
 /// <summary>
 /// Command request model
@@ -10,7 +10,7 @@ public class CommandRequest
     /// <summary>
     /// Command to execute
     /// </summary>
-    public EComands Command { get; set; }
+    public ECommands Command { get; set; }
 
     /// <summary>
     /// Robot name

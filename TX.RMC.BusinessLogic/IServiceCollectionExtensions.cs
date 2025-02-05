@@ -12,9 +12,8 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services)
     {
         services.AddSingleton<CommandService>();
-        services.AddSingleton<HistoryService>();
-        services.AddSingleton<StatusService>();
-        services.AddSingleton<LoginService>();
+        services.AddSingleton<RobotService>();
+        services.AddSingleton<UserService>();
 
         return services;
     }

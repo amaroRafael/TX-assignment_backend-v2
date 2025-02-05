@@ -13,10 +13,10 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
-public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.StatusService statusService) : ControllerBase
+public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService statusService) : ControllerBase
 {
     private readonly CommandService commandService = commandService;
-    private readonly StatusService statusService = statusService;
+    private readonly RobotService statusService = statusService;
 
     /// <summary>
     /// Accepts a command to control the robot (e.g., MoveForward, RotateRight).
@@ -27,7 +27,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// Sample request:
     ///
     ///     POST /Command
-    ///     Authorization Bearer token
+    ///     Authorization Bearer [token]
     ///     Body:
     ///     {
     ///         "command": "MoveForward",
@@ -61,7 +61,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// Sample request:
     ///
     ///     PUT /Command
-    ///     Authorization Bearer token
+    ///     Authorization Bearer [token]
     ///     Body:
     ///     {
     ///         "command": "MoveBackward",
@@ -90,6 +90,12 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// </summary>
     /// <param name="id">The command identity.</param>
     /// <returns>The command details.</returns>
+    /// <remarks>
+    /// 
+    ///     GET /command/[id]
+    ///     Authorization Bearer [token]
+    /// 
+    /// </remarks>
     /// <reponse code="200">Returns the command details.</reponse>
     /// <reponse code="404">If the command is not found.</reponse>
     [HttpGet("{id}")]

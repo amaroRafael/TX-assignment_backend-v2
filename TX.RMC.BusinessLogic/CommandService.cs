@@ -2,7 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
-using TX.RMC.BusinessLogic.Enumerators;
+using TX.RMC.DataAccess.Core.Enumerators;
 
 public class CommandService
 {
@@ -12,13 +12,13 @@ public class CommandService
         throw new NotImplementedException();
     }
 
-    public async Task<bool> SendAsync(EComands command, string robot, Guid? v)
+    public async Task<bool> SendAsync(ECommands command, string robot, Guid? v)
     {
         // TODO: Implement this method
         return true;
     }
 
-    public async Task<bool> UpdateAsync(EComands command, string robot, Guid? v)
+    public async Task<bool> UpdateAsync(ECommands command, string robot, Guid? v)
     {
         // TODO: Implement this method
         throw new NotImplementedException();
