@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TX.RMC.DataAccess.Contracts\TX.RMC.DataAccess.Contracts.csproj" />
-  </ItemGroup>
-
 </Project>
