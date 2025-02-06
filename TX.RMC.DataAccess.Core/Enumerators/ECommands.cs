@@ -8,7 +8,6 @@
 
     public enum ECommands
     {
-        None,
         Stop,
         MoveForward,
         MoveBackward,

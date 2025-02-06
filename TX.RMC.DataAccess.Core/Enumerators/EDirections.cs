@@ -7,12 +7,12 @@
     public enum EDirections
     {
         North = 0,
-        Northeast = 1,
-        East = 2,
-        Southeast = 3,
-        South = 4,
-        Southwest = 5,
-        West = 6,
-        Northwest = 7
+        Northeast = 45,
+        East = 90,
+        Southeast = 135,
+        South = 180,
+        Southwest = 225,
+        West = 270,
+        Northwest = 315
     }
 }
