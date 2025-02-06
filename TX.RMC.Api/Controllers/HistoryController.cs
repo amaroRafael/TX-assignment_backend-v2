@@ -11,6 +11,7 @@ using TX.RMC.BusinessLogic;
 public class HistoryController(RobotService robotService) : ControllerBase
 {
     private readonly RobotService robotService = robotService;
+    private static readonly string[] error = ["Operation could not be executed at this moment."];
 
     /// <summary>
     /// Gets the robot command history executed.
@@ -26,10 +27,21 @@ public class HistoryController(RobotService robotService) : ControllerBase
     /// </remarks>
     /// <response code="200">Returns the robot commands executed most recently.</response>
     [HttpGet("{robot}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetHistoryAsync(string robot, [FromQuery(Name = "count")] int count = 10)
     {
-        var commandHistory = await this.robotService.GetCommandHistoryAsync(robot, count);
-
-        return Ok(commandHistory);
+        try
+        {
+            var commandHistory = await this.robotService.GetCommandHistoryAsync(robot, count);
+            return Ok(commandHistory);
+        }
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Error = error
+            });
+        }
     }
 }

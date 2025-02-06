@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using TX.RMC.Api.Extensions;
 using TX.RMC.Api.Models;
 using TX.RMC.BusinessLogic;
+using TX.RMC.DataAccess.Core.Models;
 
 /// <summary>
 /// Command controller.
@@ -13,10 +14,12 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
-public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService statusService) : ControllerBase
+public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService robotService, BusinessLogic.UserService userService) : ControllerBase
 {
     private readonly CommandService commandService = commandService;
-    private readonly RobotService statusService = statusService;
+    private readonly RobotService robotService = robotService;
+    private readonly UserService userService = userService;
+    private static readonly string[] error = ["Operation could not be executed at this moment."];
 
     /// <summary>
     /// Accepts a command to control the robot (e.g., MoveForward, RotateRight).
@@ -42,14 +45,25 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CommandRequest request)
     {
-        bool result = await commandService.SendAsync(request.Command, request.Robot, HttpContext.User.GetId());
+        var result = await commandService.SendAsync(request.Command, request.Robot, HttpContext.User.GetId());
 
-        if (result)
+        try
         {
-            var status = await this.statusService.GetStatusAsync(request.Robot);
-            return CreatedAtAction(nameof(Post), new { request.Robot, status });
+            if (result is not null)
+            {
+                var status = await this.robotService.GetStatusAsync(request.Robot);
+                return CreatedAtAction(nameof(Post), new { request.Robot, status });
+            }
+
+            return BadRequest(new { Error = $"Failed to send command to robot: {request.Robot}" });
         }
-        return BadRequest(new { Error = $"Failed to send command to robot: {request.Robot}" });
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Error = error
+            });
+        }
     }
 
     /// <summary>
@@ -76,13 +90,24 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put([FromBody] CommandRequest request)
     {
-        bool result = await commandService.UpdateAsync(request.Command, request.Robot, HttpContext.User.GetId());
-        if (result)
+        try
         {
-            var status = await this.statusService.GetStatusAsync(request.Robot);
-            return AcceptedAtAction(nameof(Put), new { request.Robot, status });
+            bool result = await commandService.UpdateAsync(request.Command, request.Robot);
+            if (result)
+            {
+                var status = await this.robotService.GetStatusAsync(request.Robot);
+                return AcceptedAtAction(nameof(Put), new { request.Robot, status });
+            }
+
+            return BadRequest(new { Error = $"Failed to update command to robot: {request.Robot}" });
         }
-        return BadRequest(new { Error = $"Failed to update command to robot: {request.Robot}" });
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Error = error
+            });
+        }
     }
 
     /// <summary>
@@ -101,12 +126,47 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var command = await this.commandService.GetAsync(id);
-        if (command != null)
+        try
         {
-            return Ok(command);
-        }
+            Command command = await this.commandService.GetAsync(id);
+            if (command != null)
+            {
+                Robot robot = await this.robotService.GetAsync(command.RobotId);
+                DataAccess.Core.Models.User user = await this.userService.GetAsync(command.UserId);
 
-        return NotFound();
+                return Ok(new
+                {
+                    Command = new
+                    {
+                        command.Id,
+                        command.Action,
+                        command.CreatedAt,
+                        Robot = new
+                        {
+                            robot?.Id,
+                            robot?.NameIdentity,
+                            command.PositionX,
+                            command.PositionY,
+                            command.Direction
+                        },
+                        User = new
+                        {
+                            user?.Id,
+                            user?.Name,
+                            user?.Username
+                        }
+                    }
+                });
+            }
+
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Error = error
+            });
+        }
     }
 }

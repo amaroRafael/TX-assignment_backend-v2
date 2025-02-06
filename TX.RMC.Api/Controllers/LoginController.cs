@@ -11,6 +11,8 @@ using TX.RMC.Api.Services;
 public class LoginController(IdentityService identityService) : ControllerBase
 {
     private readonly IdentityService identityService = identityService;
+    private static readonly string[] errorInvalid = ["Invalid username or password"];
+    private static readonly string[] errorFailed = ["Failed to authenticate user."];
 
     /// <summary>
     /// Authenticates a user.
@@ -34,16 +36,35 @@ public class LoginController(IdentityService identityService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromForm(Name = "username")] string username, [FromForm(Name = "password")] string password)
     {
-        var result = await this.identityService.LoginAsync(username, password, HttpContext.RequestAborted);
-        if (result != null)
+        try
         {
-            return Ok(result);
-        }
+            var result = await this.identityService.LoginAsync(username, password, HttpContext.RequestAborted);
+            if (result != null)
+            {
+                return Ok(result);
+            }
 
-        return BadRequest(new
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = errorInvalid
+            });
+        }
+        catch (ArgumentException argEx)
         {
-            Success = false,
-            Errors = new[] { "Invalid username or password" }
-        });
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = new[] { argEx.Message }
+            });
+        }
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = errorFailed
+            });
+        }
     }
 }

@@ -11,6 +11,8 @@ using TX.RMC.BusinessLogic;
 public class StatusController(RobotService robotService) : ControllerBase
 {
     private readonly RobotService robotService = robotService;
+    private static readonly string[] error = ["Operation could not be executed at this moment."];
+
 
     /// <summary>
     /// Gets the status of the robot
@@ -25,9 +27,21 @@ public class StatusController(RobotService robotService) : ControllerBase
     /// </remarks>
     /// <response code="200">Returns the robot status.</response>
     [HttpGet("{robot}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Get(string robot)
     {
-        string status = await this.robotService.GetStatusAsync(robot);
-        return new OkObjectResult(new { robot, status });
+        try
+        {
+            string status = await this.robotService.GetStatusAsync(robot);
+            return Ok(new { robot, status });
+        }
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                Error = error
+            });
+        }
     }
 }
