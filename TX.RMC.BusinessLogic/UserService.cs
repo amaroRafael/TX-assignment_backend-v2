@@ -69,8 +69,18 @@ public class UserService(IServiceScopeFactory scopeFactory)
         return await userRepository.AddAsync(new User(name, username, secret, saltBase64));
     }
 
-    public async Task<User> GetAsync(Guid userId)
+    /// <summary>
+    /// Retrieves user from database.
+    /// </summary>
+    /// <param name="id">User identity.</param>
+    /// <returns>Returns the user.</returns>
+    public async Task<User> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        using var scope = this.scopeFactory.CreateAsyncScope();
+        IUserDataRepository userDataRepository = scope.ServiceProvider.GetRequiredService<IUserDataRepository>();
+
+        User user = await userDataRepository.GetByIdAsync(id);
+        return user;
+
     }
 }

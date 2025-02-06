@@ -19,9 +19,9 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     public async Task<Command> GetAsync(Guid id)
     {
         using var scope = this.scopeFactory.CreateAsyncScope();
-        ICommandDataRepository dataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
         
-        Command command = await dataRepository.GetByIdAsync(id);
+        Command command = await commandDataRepository.GetByIdAsync(id);
         return command;
     }
 
@@ -46,9 +46,9 @@ public class CommandService(IServiceScopeFactory scopeFactory)
 
         if (robotModel is Robot robotFound)
         {
-            ICommandDataRepository dataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
 
-            Command? lastCommand = await dataRepository.GetLastCommandExecutedAsync(robot);
+            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robot);
 
             var posX = lastCommand?.PositionX ?? 0;
             var posY = lastCommand?.PositionY ?? 0;
@@ -84,7 +84,7 @@ public class CommandService(IServiceScopeFactory scopeFactory)
                 PositionY = posY,
             };
 
-            return dataRepository.AddAsync(commandModel);
+            return commandDataRepository.AddAsync(commandModel);
         }
 
         return null;

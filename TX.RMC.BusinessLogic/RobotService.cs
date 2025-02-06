@@ -96,8 +96,17 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         return [];
     }
 
-    public async Task<Robot> GetAsync(Guid robotId)
+    /// <summary>
+    /// Retrieves robot from database.
+    /// </summary>
+    /// <param name="id">Robot identity.</param>
+    /// <returns>Returns the robot.</returns>
+    public async Task<Robot> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        using var scope = this.scopeFactory.CreateAsyncScope();
+        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
+
+        Robot robot = await robotDataRepository.GetByIdAsync(id);
+        return robot;
     }
 }
