@@ -35,10 +35,10 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> SendAsync(ECommands command, string robot, Guid? userId)
+    public async Task<Command?> SendAsync(ECommands command, string robot, Guid userId)
     {
         /// The robot and user are required.
-        if (!userId.HasValue) throw new ArgumentNullException(nameof(userId), "User is required.");
+        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         using var scope = this.scopeFactory.CreateAsyncScope();
@@ -68,7 +68,7 @@ public class CommandService(IServiceScopeFactory scopeFactory)
                 Action = command,
                 CreatedAt = DateTime.UtcNow,
                 RobotId = robotFound.Id,
-                UserId = userId!.Value,
+                UserId = userId,
                 Direction = direction,
                 PositionX = posX,
                 PositionY = posY,
@@ -90,10 +90,10 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> UpdateAsync(ECommands command, string robot, Guid? userId)
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, Guid userId)
     {
         /// The user and robot are required.
-        if (!userId.HasValue) throw new ArgumentNullException(nameof(userId), "User is required.");
+        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         using var scope = this.scopeFactory.CreateAsyncScope();
@@ -134,7 +134,7 @@ public class CommandService(IServiceScopeFactory scopeFactory)
                 Action = command,
                 CreatedAt = DateTime.UtcNow,
                 RobotId = lastCommand.RobotId,
-                UserId = lastCommand.UserId,
+                UserId = userId,
                 Direction = direction,
                 PositionX = posX,
                 PositionY = posY,

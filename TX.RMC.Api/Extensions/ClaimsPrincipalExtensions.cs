@@ -10,7 +10,7 @@ public static class ClaimsPrincipalExtensions
     /// <summary>
     /// Get the user id from the claims principal.
     /// </summary>
-    public static Guid? GetId(this ClaimsPrincipal user)
+    public static Guid GetId(this ClaimsPrincipal user)
     {
         if (user?.Identity?.IsAuthenticated ?? false)
         {
@@ -23,7 +23,7 @@ public static class ClaimsPrincipalExtensions
             }
         }
 
-        return null;
+        return Guid.Empty;
     }
 
     /// <summary>

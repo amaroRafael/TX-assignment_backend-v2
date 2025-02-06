@@ -92,8 +92,8 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     {
         try
         {
-            bool result = await commandService.UpdateAsync(request.Command, request.Robot);
-            if (result)
+            Command? command = await this.commandService.UpdateAsync(request.Command, request.Robot, HttpContext.User.GetId());
+            if (command is not null)
             {
                 var status = await this.robotService.GetStatusAsync(request.Robot);
                 return AcceptedAtAction(nameof(Put), new { request.Robot, status });
