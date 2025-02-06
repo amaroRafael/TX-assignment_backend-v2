@@ -20,7 +20,8 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     {
         using var scope = this.scopeFactory.CreateAsyncScope();
         ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-        
+
+        /// The command will be retrieved.
         Command command = await commandDataRepository.GetByIdAsync(id);
         return command;
     }
@@ -36,43 +37,32 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
     public async Task<Command?> SendAsync(ECommands command, string robot, Guid? userId)
     {
+        /// The robot and user are required.
         if (!userId.HasValue) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         using var scope = this.scopeFactory.CreateAsyncScope();
         IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        Robot? robotModel = robotDataRepository.GetByNameIdentityAsync(robot);
+        /// The robot will be retrieved.
+        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
 
+        /// The robot must be found.
         if (robotModel is Robot robotFound)
         {
             ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
 
+            /// The last command executed will be retrieved.
             Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robot);
 
+            /// The last command executed will be used to update the new positions and direction.
             var posX = lastCommand?.PositionX ?? 0;
             var posY = lastCommand?.PositionY ?? 0;
             var direction = lastCommand?.Direction ?? EDirections.North;
 
-            switch (command)
-            {
-                case ECommands.MoveForward:
-                    UpdatePositions(direction, 1, ref posX, ref posY);
-                    break;
-                case ECommands.MoveBackward:
-                    UpdatePositions(direction, -1, ref posX, ref posY);
-                    break;
-                case ECommands.RotateLeft:
-                    UpdateDirection(false, ref direction);
-                    break;
-                case ECommands.RotateRight:
-                    UpdateDirection(true, ref direction);
-                    break;
-                case ECommands.Stop:
-                default:
-                    break;
-            }
+            UpdatePositionAndDirection(command, ref direction, ref posX, ref posY);
 
+            /// The new command will be executed.
             Command commandModel = new()
             {
                 Action = command,
@@ -84,10 +74,122 @@ public class CommandService(IServiceScopeFactory scopeFactory)
                 PositionY = posY,
             };
 
-            return commandDataRepository.AddAsync(commandModel);
+            /// The new command executed will be added to the database.
+            return await commandDataRepository.AddAsync(commandModel);
         }
 
         return null;
+    }
+
+
+    /// <summary>
+    /// Updates the last command executed and add the new command to the database.
+    /// </summary>
+    /// <param name="command">Enum ECommands. Accepted values include: Stop, MoveForward, MoveBackward, RotateLeft, RotateRight,</param>
+    /// <param name="robot">The robot name identity.</param>
+    /// <param name="userId">User identity.</param>
+    /// <returns>Return the command data executed.</returns>
+    /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, Guid? userId)
+    {
+        /// The user and robot are required.
+        if (!userId.HasValue) throw new ArgumentNullException(nameof(userId), "User is required.");
+        if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
+
+        using var scope = this.scopeFactory.CreateAsyncScope();
+        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+
+        /// The last command executed will be retrieved.
+        Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+
+        if (lastCommand is Command commandFound)
+        {
+            /// The last command executed will be used to update the new positions and direction.
+            var posX = commandFound.PositionX;
+            var posY = commandFound.PositionY;
+            var direction = commandFound.Direction;
+
+            /// The last command executed will be reversed.
+            switch (lastCommand.Action)
+            {
+                case ECommands.MoveForward:
+                    UpdatePositionAndDirection(ECommands.MoveBackward, ref direction, ref posX, ref posY);
+                    break;
+                case ECommands.MoveBackward:
+                    UpdatePositionAndDirection(ECommands.MoveForward, ref direction, ref posX, ref posY);
+                    break;
+                case ECommands.RotateLeft:
+                    UpdatePositionAndDirection(ECommands.RotateRight, ref direction, ref posX, ref posY);
+                    break;
+                case ECommands.RotateRight:
+                    UpdatePositionAndDirection(ECommands.RotateLeft, ref direction, ref posX, ref posY);
+                    break;
+            }
+
+            /// The new command will be executed.
+            UpdatePositionAndDirection(command, ref direction, ref posX, ref posY);
+
+            Command commandModel = new()
+            {
+                Action = command,
+                CreatedAt = DateTime.UtcNow,
+                RobotId = lastCommand.RobotId,
+                UserId = lastCommand.UserId,
+                Direction = direction,
+                PositionX = posX,
+                PositionY = posY,
+            };
+
+            /// The new command executed will be added to the database.
+            Command newCommand = await commandDataRepository.AddAsync(commandModel);
+
+            /// The last command executed will be updated with the new command executed.
+            lastCommand.ReplacedByCommandId = newCommand.Id;
+            return await commandDataRepository.UpdateAsync(lastCommand);
+        }
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Updates the position and direction
+    /// </summary>
+    /// <param name="command">Enum ECommands. Accepted values include: Stop, MoveForward, MoveBackward, RotateLeft, RotateRight,</param>
+    /// <param name="direction">
+    /// The direction of the robot.
+    /// Enum EDirections.
+    /// Accepetd values include:
+    ///     North = 0, Northeast = 45,
+    ///     East = 90, Southeast = 135,
+    ///     South = 180, Southwest = 225,
+    ///     West = 270, Northwest = 315</param>
+    /// <param name="posX">The position of the robot at the X axis</param>
+    /// <param name="posY">The position of the robot at the Y axis</param>
+    private static void UpdatePositionAndDirection(ECommands command, ref EDirections direction, ref int posX, ref int posY)
+    {
+        switch (command)
+        {
+            case ECommands.MoveForward:
+                /// The new position will be updated based on the old position.
+                UpdatePositions(direction, 1, ref posX, ref posY);
+                break;
+            case ECommands.MoveBackward:
+                /// The new position will be updated based on the old position.
+                UpdatePositions(direction, -1, ref posX, ref posY);
+                break;
+            case ECommands.RotateLeft:
+                /// The new direction will be updated based on the old direction.
+                UpdateDirection(false, ref direction);
+                break;
+            case ECommands.RotateRight:
+                /// The new direction will be updated based on the old direction.
+                UpdateDirection(true, ref direction);
+                break;
+            case ECommands.Stop:
+            default:
+                break;
+        }
 
         static void UpdatePositions(EDirections direction, int step, ref int posX, ref int posY)
         {
@@ -126,27 +228,28 @@ public class CommandService(IServiceScopeFactory scopeFactory)
 
         static void UpdateDirection(bool clockwise, ref EDirections direction)
         {
+            /// Gets all the values of the enum EDirections.
             var values = Enum.GetValues<EDirections>();
+            /// Gets the minimum and maximum value of the enum EDirections.
             int min = values.Select(s => (int)s).Min();
             int max = values.Select(s => (int)s).Max();
 
             // the first item has value 0 and the max value 360 is not inclued sinc eit comes back to 0.
             // That is the reason it was not included to calculate the space between items.
-            int degree = max / (values.Length - 1); 
+            int degree = max / (values.Length - 1);
 
+            /// If clockwise is true, the degree will be added (rotate right), otherwise it will be subtracted (rotate left).
             if (!clockwise) degree += -1;
 
+            /// The new direction will be updated.
             var newDirection = (int)direction + degree;
+            /// If the new direction is less than the minimum value, the new direction will be the maximum value.
             if (newDirection < min) newDirection = max;
+            /// If the new direction is greater than the maximum value, the new direction will be the minimum value.
             if (newDirection > max) newDirection = min;
 
+            /// Update the direction.
             direction = (EDirections)newDirection;
         }
-    }
-
-    public async Task<bool> UpdateAsync(ECommands command, string robot)
-    {
-        // TODO: Implement this method
-        throw new NotImplementedException();
     }
 }

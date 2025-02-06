@@ -3,10 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading.Tasks;
     using TX.RMC.DataAccess.Core.Models;
 
     public interface IRobotDataRepository : IDataRepository<Robot>
     {
-        Robot? GetByNameIdentityAsync(string robot);
+        ValueTask<Robot?> GetByNameIdentityAsync(string robot);
     }
 }

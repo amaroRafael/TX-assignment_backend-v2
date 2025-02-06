@@ -24,12 +24,19 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         using var scope = scopeFactory.CreateAsyncScope();
         IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        Robot? robotModel = robotDataRepository.GetByNameIdentityAsync(robot);
+        /// Get robot from database.
+        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
 
+        /// If robot not found return message.
         if (robotModel is null) return "Robot not found.";
 
         ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+
+        /// Get last command executed by robot.
         Command? command = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+
+        /// If no command executed return stopped.
+        /// Otherwise return the command executed
         return (command?.Action ?? ECommands.Stop) switch
         {
             ECommands.MoveForward => "Moved forward",
@@ -51,43 +58,40 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         using var scope = scopeFactory.CreateAsyncScope();
         IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        Robot? robotModel = robotDataRepository.GetByNameIdentityAsync(robot);
+        /// Get robot from database.
+        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
 
+        /// If robot not found return empty list.
         if (robotModel is Robot robotFound)
         {
             ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+            /// Get last commands executed by robot.
             IEnumerable<Command> commands = await commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
 
             IList<(Guid Id, string Command, DateTime ExecutedAt)> commandList = [];
+            IList<Guid> replaceCommandIds = [];
 
-            string commandText = string.Empty;
-            foreach (Command command in commands.Reverse())
+            /// Iterate over commands and get the command text.
+            foreach (Command command in commands.OrderByDescending(o => o.CreatedAt))
             {
-                if (string.IsNullOrEmpty(commandText))
+                if (replaceCommandIds.Contains(command.Id)) continue;
+
+                string commandText = command.Action.ToString();
+
+                if (command.ReplacedByCommandId.HasValue)
                 {
-                    commandText = command.Action.ToString();
+                    Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId.Value);
 
-                    if (command.ReplacedByCommandId.HasValue)
+                    replacedCommand ??= await commandDataRepository.GetByIdAsync(command.ReplacedByCommandId.Value);
+
+                    if (replacedCommand is not null)
                     {
-                        continue;
-                    }
-
-                    commandList.Add((command.Id, commandText, command.CreatedAt));
-                }
-                else
-                {
-                    commandText += $" replaced by {command.Action}";
-
-                    commandList.Add((command.Id, commandText, command.CreatedAt));
-
-                    if (command.ReplacedByCommandId.HasValue)
-                    {
-                        commandText = command.Action.ToString();
-                        continue;
+                        commandText += $" replaced by {command.Action}";
+                        replaceCommandIds.Add(replacedCommand.Id);
                     }
                 }
 
-                commandText = string.Empty;
+                commandList.Add((command.Id, commandText, command.CreatedAt));
             }
 
             return commandList;
@@ -106,6 +110,7 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         using var scope = this.scopeFactory.CreateAsyncScope();
         IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
+        /// Get robot from database.
         Robot robot = await robotDataRepository.GetByIdAsync(id);
         return robot;
     }
