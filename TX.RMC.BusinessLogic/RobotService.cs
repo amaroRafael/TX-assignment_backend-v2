@@ -22,15 +22,15 @@ public class RobotService(IServiceScopeFactory scopeFactory)
     public async ValueTask<string> GetStatusAsync(string robot)
     {
         using var scope = scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
+        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        Robot? robotModel = robotRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = robotDataRepository.GetByNameIdentityAsync(robot);
 
         if (robotModel is null) return "Robot not found.";
 
-        ICommandDataRepository commandRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-        Command? command = await commandRepository.GetLastCommandExecutedAsync(robot);
-        return (command?.Action ?? ECommands.None) switch
+        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+        Command? command = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+        return (command?.Action ?? ECommands.Stop) switch
         {
             ECommands.MoveForward => "Moved forward",
             ECommands.MoveBackward => "Moved backward",
@@ -49,14 +49,14 @@ public class RobotService(IServiceScopeFactory scopeFactory)
     public async ValueTask<IEnumerable<(Guid Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10)
     {
         using var scope = scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
+        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        Robot? robotModel = robotRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = robotDataRepository.GetByNameIdentityAsync(robot);
 
         if (robotModel is Robot robotFound)
         {
-            ICommandDataRepository commandRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-            IEnumerable<Command> commands = await commandRepository.GetAllByRobotAsync(robotFound.Id, count);
+            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+            IEnumerable<Command> commands = await commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
 
             IList<(Guid Id, string Command, DateTime ExecutedAt)> commandList = [];
 
@@ -94,5 +94,10 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         }
 
         return [];
+    }
+
+    public async Task<Robot> GetAsync(Guid robotId)
+    {
+        throw new NotImplementedException();
     }
 }

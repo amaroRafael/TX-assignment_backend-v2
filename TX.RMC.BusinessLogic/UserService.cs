@@ -49,7 +49,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
     /// </summary>
     /// <exception cref="ArgumentException">Parameter (name, username or password) is missing.</exception>
     /// <exception cref="InvalidCastException">User retrieved from data with the same username. Username must be unique.</exception>
-    public async Task AddUserAsync(string name, string username, string password)
+    public async ValueTask<User> AddUserAsync(string name, string username, string password)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required.", nameof(name));
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
@@ -66,6 +66,11 @@ public class UserService(IServiceScopeFactory scopeFactory)
         string secret = Pbkdf2Hasher.ComputeHash(password, salt);
         string saltBase64 = Convert.ToBase64String(salt);
 
-        await userRepository.AddAsync(new User(name, username, secret, saltBase64));
+        return await userRepository.AddAsync(new User(name, username, secret, saltBase64));
+    }
+
+    public async Task<User> GetAsync(Guid userId)
+    {
+        throw new NotImplementedException();
     }
 }
