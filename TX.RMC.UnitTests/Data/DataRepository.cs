@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TX.RMC.DataAccess.Core.Models;
@@ -22,7 +23,8 @@ internal class DataRepository<T> where T : class, new()
         // Add the columns to the DataTable
         foreach (var propertyInfo in typeof(T).GetProperties())
         {
-            DataColumn column = new DataColumn(propertyInfo.Name, propertyInfo.PropertyType);
+            Type propertyType = Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType;
+            DataColumn column = new DataColumn(propertyInfo.Name, propertyType);
 
             this._dataTable.Columns.Add(column);
         }
@@ -33,7 +35,7 @@ internal class DataRepository<T> where T : class, new()
     /// </summary>
     /// <param name="id">Model identity</param>
     /// <returns>Returns model retrieved from database</returns>
-    protected T GetById(Guid id)
+    protected T? GetById(Guid id)
     {
         // Create a new instance of the model
         T model = new T();
@@ -44,8 +46,13 @@ internal class DataRepository<T> where T : class, new()
                        select rows)
                         .SingleOrDefault();
 
+        if (dataRow == null)
+        {
+            return null;
+        }
+
         // Populate the model with the data from the DataRow
-        PopulateUserModel(model, dataRow);
+        PopulateModel(model, dataRow);
 
         // Return the model
         return model;
@@ -60,7 +67,7 @@ internal class DataRepository<T> where T : class, new()
         var dataRow = this._dataTable.NewRow();
 
         // Loop through the properties of the model and set the value in the DataRow
-        foreach (var propertyInfo in typeof(User).GetProperties())
+        foreach (var propertyInfo in typeof(T).GetProperties())
         {
             // If the property is the Id, set the value to a new Guid
             if (propertyInfo.Name == "Id")
@@ -68,8 +75,10 @@ internal class DataRepository<T> where T : class, new()
                 propertyInfo.SetValue(model, Guid.NewGuid());
             }
 
+            var propertyValue = propertyInfo.GetValue(model);
+
             // Set the value in the DataRow
-            dataRow[propertyInfo.Name] = propertyInfo.GetValue(model);
+            dataRow[propertyInfo.Name] = propertyValue ?? DBNull.Value;
         }
 
         // Add the DataRow to the DataTable
@@ -84,7 +93,7 @@ internal class DataRepository<T> where T : class, new()
     /// <summary>
     /// Populates the model with the data from the DataRow
     /// </summary>
-    protected static void PopulateUserModel(T model, DataRow? dataRow)
+    protected static void PopulateModel(T model, DataRow? dataRow)
     {
         // If the DataRow is not null, populate the model
         if (dataRow != null)
@@ -92,7 +101,8 @@ internal class DataRepository<T> where T : class, new()
             // Loop through the properties of the model and set the value from the DataRow
             foreach (var propertyInfo in typeof(T).GetProperties())
             {
-                propertyInfo.SetValue(model, dataRow[propertyInfo.Name]);
+                var dataRowValue = dataRow[propertyInfo.Name];
+                if (dataRowValue != DBNull.Value) propertyInfo.SetValue(model, dataRowValue);
             }
         }
     }

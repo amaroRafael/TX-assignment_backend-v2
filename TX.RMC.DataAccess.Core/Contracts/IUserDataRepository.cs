@@ -8,7 +8,6 @@
 
     public interface IUserDataRepository : IDataRepository<User>
     {
-        ValueTask<User> AddAsync(User user);
         ValueTask<User?> GetByUsernameAsync(string username);
     }
 }

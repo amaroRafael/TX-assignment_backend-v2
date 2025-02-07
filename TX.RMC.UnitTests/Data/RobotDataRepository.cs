@@ -10,7 +10,15 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
 {
-    public ValueTask<Robot> GetByIdAsync(Guid id)
+    public ValueTask<Robot> AddAsync(Robot robot)
+    {
+        var newRobot = this.Add(robot);
+
+        return ValueTask.FromResult(newRobot);
+    }
+
+
+    public ValueTask<Robot?> GetByIdAsync(Guid id)
     {
         return ValueTask.FromResult(GetById(id));
     }
@@ -24,7 +32,7 @@ internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
                        select rows)
                 .SingleOrDefault();
 
-        PopulateUserModel(robot, dataRow);
+        PopulateModel(robot, dataRow);
 
         return ValueTask.FromResult<Robot?>(robot);
     }

@@ -11,9 +11,9 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepository
 {
-    public ValueTask<Command> AddAsync(Command command)
+    public ValueTask<Command> AddAsync(Command model)
     {
-        var newCommand = Add(command);
+        var newCommand = Add(model);
 
         return ValueTask.FromResult(newCommand);
     }
@@ -34,7 +34,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
             {
                 Command newCommand = new();
 
-                PopulateUserModel(newCommand, command);
+                PopulateModel(newCommand, command);
 
                 commandList.Add(newCommand);
             }
@@ -43,7 +43,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<IEnumerable<Command>>(commandList);
     }
 
-    public ValueTask<Command> GetByIdAsync(Guid id)
+    public ValueTask<Command?> GetByIdAsync(Guid id)
     {
         return ValueTask.FromResult(GetById(id));
     }
@@ -59,7 +59,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         if (dataRow != null)
         {
             Command command = new();
-            PopulateUserModel(command, dataRow);
+            PopulateModel(command, dataRow);
             return ValueTask.FromResult<Command?>(command);
         }
 

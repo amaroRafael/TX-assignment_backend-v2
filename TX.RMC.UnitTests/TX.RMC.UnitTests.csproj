@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TX.RMC.BusinessLogic\TX.RMC.BusinessLogic.csproj" />
     <ProjectReference Include="..\TX.RMC.DataAccess.Core\TX.RMC.DataAccess.Core.csproj" />
   </ItemGroup>

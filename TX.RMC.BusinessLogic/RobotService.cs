@@ -97,10 +97,16 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// </summary>
     /// <param name="id">Robot identity.</param>
     /// <returns>Returns the robot.</returns>
-    public async Task<Robot> GetAsync(Guid id)
+    public async Task<Robot?> GetAsync(Guid id)
     {
         /// Get robot from database.
-        Robot robot = await this.robotDataRepository.GetByIdAsync(id);
+        Robot? robot = await this.robotDataRepository.GetByIdAsync(id);
         return robot;
+    }
+
+    public async ValueTask<Robot> AddAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required.", nameof(name));
+        return await this.robotDataRepository.AddAsync(new Robot { NameIdentity = name });
     }
 }

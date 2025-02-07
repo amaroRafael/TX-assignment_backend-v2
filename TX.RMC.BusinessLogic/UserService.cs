@@ -47,7 +47,7 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <exception cref="ArgumentException">Parameter (name, username or password) is missing.</exception>
     /// <exception cref="InvalidCastException">User retrieved from data with the same username. Username must be unique.</exception>
-    public async ValueTask<User> AddUserAsync(string name, string username, string password)
+    public async ValueTask<User> AddAsync(string name, string username, string password)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required.", nameof(name));
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
@@ -69,9 +69,9 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <param name="id">User identity.</param>
     /// <returns>Returns the user.</returns>
-    public async Task<User> GetAsync(Guid id)
+    public async Task<User?> GetAsync(Guid id)
     {
-        User user = await this.userDataRepository.GetByIdAsync(id);
+        User? user = await this.userDataRepository.GetByIdAsync(id);
         return user;
 
     }

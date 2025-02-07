@@ -10,14 +10,14 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class UserDataRepository : DataRepository<User>, IUserDataRepository
 {
-    public ValueTask<User> AddAsync(User user)
+    public ValueTask<User> AddAsync(User model)
     {
-        var newUser = this.Add(user);
+        var newUser = this.Add(model);
 
         return ValueTask.FromResult(newUser);
     }
 
-    public ValueTask<User> GetByIdAsync(Guid id)
+    public ValueTask<User?> GetByIdAsync(Guid id)
     {
         return ValueTask.FromResult(GetById(id));
     }
@@ -32,7 +32,7 @@ internal class UserDataRepository : DataRepository<User>, IUserDataRepository
         if (dataRow != null)
         {
             User user = new();
-            PopulateUserModel(user, dataRow);
+            PopulateModel(user, dataRow);
 
             return ValueTask.FromResult<User?>(user);
         }
