@@ -11,9 +11,9 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services)
     {
-        services.AddSingleton<CommandService>();
-        services.AddSingleton<RobotService>();
-        services.AddSingleton<UserService>();
+        services.AddTransient<CommandService>();
+        services.AddTransient<RobotService>();
+        services.AddTransient<UserService>();
 
         return services;
     }

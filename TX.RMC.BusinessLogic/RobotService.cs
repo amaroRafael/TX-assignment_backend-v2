@@ -10,9 +10,10 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Enumerators;
 using TX.RMC.DataAccess.Core.Models;
 
-public class RobotService(IServiceScopeFactory scopeFactory)
+public class RobotService(IRobotDataRepository robotDataRepository, ICommandDataRepository commandDataRepository)
 {
-    private readonly IServiceScopeFactory scopeFactory = scopeFactory;
+    private readonly IRobotDataRepository robotDataRepository = robotDataRepository;
+    private readonly ICommandDataRepository commandDataRepository = commandDataRepository;
 
     /// <summary>
     /// Gets the robot current status.
@@ -21,19 +22,14 @@ public class RobotService(IServiceScopeFactory scopeFactory)
     /// <returns>Current status of the robot.</returns>
     public async ValueTask<string> GetStatusAsync(string robot)
     {
-        using var scope = scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
-
         /// Get robot from database.
-        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
 
         /// If robot not found return message.
         if (robotModel is null) return "Robot not found.";
 
-        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-
         /// Get last command executed by robot.
-        Command? command = await commandDataRepository.GetLastCommandExecutedAsync(robotModel!.Id);
+        Command? command = await this.commandDataRepository.GetLastCommandExecutedAsync(robotModel!.Id);
 
         /// If no command executed return stopped.
         /// Otherwise return the command executed
@@ -55,18 +51,14 @@ public class RobotService(IServiceScopeFactory scopeFactory)
     /// <returns>Command history</returns>
     public async ValueTask<IEnumerable<(Guid Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10)
     {
-        using var scope = scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
-
         /// Get robot from database.
-        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
 
         /// If robot not found return empty list.
         if (robotModel is Robot robotFound)
         {
-            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
             /// Get last commands executed by robot.
-            IEnumerable<Command> commands = await commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
+            IEnumerable<Command> commands = await this.commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
 
             IList<(Guid Id, string Command, DateTime ExecutedAt)> commandList = [];
             IList<Guid> replaceCommandIds = [];
@@ -82,7 +74,7 @@ public class RobotService(IServiceScopeFactory scopeFactory)
                 {
                     Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId.Value);
 
-                    replacedCommand ??= await commandDataRepository.GetByIdAsync(command.ReplacedByCommandId.Value);
+                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId.Value);
 
                     if (replacedCommand is not null)
                     {
@@ -107,11 +99,8 @@ public class RobotService(IServiceScopeFactory scopeFactory)
     /// <returns>Returns the robot.</returns>
     public async Task<Robot> GetAsync(Guid id)
     {
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
-
         /// Get robot from database.
-        Robot robot = await robotDataRepository.GetByIdAsync(id);
+        Robot robot = await this.robotDataRepository.GetByIdAsync(id);
         return robot;
     }
 }

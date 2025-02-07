@@ -12,9 +12,9 @@ using TX.RMC.BusinessLogic.Security.Crypt;
 using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 
-public class UserService(IServiceScopeFactory scopeFactory)
+public class UserService(IUserDataRepository userDataRepository)
 {
-    private readonly IServiceScopeFactory scopeFactory = scopeFactory;
+    private readonly IUserDataRepository userDataRepository = userDataRepository;
 
     /// <summary>
     /// Validate user credentials
@@ -26,9 +26,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
         if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password is required.", nameof(password));
 
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IUserDataRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserDataRepository>();
-        User? user = await userRepository.GetByUsernameAsync(username);
+        User? user = await this.userDataRepository.GetByUsernameAsync(username);
 
         if (user is User userFound)
         {
@@ -55,10 +53,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
         if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password is required.", nameof(password));
 
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IUserDataRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserDataRepository>();
-
-        User? user = await userRepository.GetByUsernameAsync(username);
+        User? user = await this.userDataRepository.GetByUsernameAsync(username);
 
         if (user is User userFound) throw new InvalidCastException("Username is invalid. Already used.");
 
@@ -66,7 +61,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
         string secret = Pbkdf2Hasher.ComputeHash(password, salt);
         string saltBase64 = Convert.ToBase64String(salt);
 
-        return await userRepository.AddAsync(new User { Name = name, Username = username, Secret = secret, Salt = saltBase64 });
+        return await userDataRepository.AddAsync(new User { Name = name, Username = username, Secret = secret, Salt = saltBase64 });
     }
 
     /// <summary>
@@ -76,10 +71,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
     /// <returns>Returns the user.</returns>
     public async Task<User> GetAsync(Guid id)
     {
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IUserDataRepository userDataRepository = scope.ServiceProvider.GetRequiredService<IUserDataRepository>();
-
-        User user = await userDataRepository.GetByIdAsync(id);
+        User user = await this.userDataRepository.GetByIdAsync(id);
         return user;
 
     }

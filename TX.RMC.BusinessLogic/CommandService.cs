@@ -7,9 +7,10 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Enumerators;
 using TX.RMC.DataAccess.Core.Models;
 
-public class CommandService(IServiceScopeFactory scopeFactory)
+public class CommandService(ICommandDataRepository commandDataRepository, IRobotDataRepository robotDataRepository)
 {
-    private readonly IServiceScopeFactory scopeFactory = scopeFactory;
+    private readonly ICommandDataRepository commandDataRepository = commandDataRepository;
+    private readonly IRobotDataRepository robotDataRepository = robotDataRepository;
 
     /// <summary>
     /// Retrieves command from database.
@@ -18,11 +19,8 @@ public class CommandService(IServiceScopeFactory scopeFactory)
     /// <returns>Returns the command.</returns>
     public async Task<Command> GetAsync(Guid id)
     {
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-
         /// The command will be retrieved.
-        Command command = await commandDataRepository.GetByIdAsync(id);
+        Command command = await this.commandDataRepository.GetByIdAsync(id);
         return command;
     }
 
@@ -41,19 +39,14 @@ public class CommandService(IServiceScopeFactory scopeFactory)
         if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
-
         /// The robot will be retrieved.
-        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
 
         /// The robot must be found.
         if (robotModel is Robot robotFound)
         {
-            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-
             /// The last command executed will be retrieved.
-            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
+            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
 
             /// The last command executed will be used to update the new positions and direction.
             var posX = lastCommand?.PositionX ?? 0;
@@ -75,7 +68,7 @@ public class CommandService(IServiceScopeFactory scopeFactory)
             };
 
             /// The new command executed will be added to the database.
-            return await commandDataRepository.AddAsync(commandModel);
+            return await this.commandDataRepository.AddAsync(commandModel);
         }
 
         return null;
@@ -96,19 +89,14 @@ public class CommandService(IServiceScopeFactory scopeFactory)
         if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
-        using var scope = this.scopeFactory.CreateAsyncScope();
-        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
-
         /// The robot will be retrieved.
-        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
 
         /// The robot must be found.
         if (robotModel is Robot robotFound)
         {
-            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
-
             /// The last command executed will be retrieved.
-            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
+            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
 
             if (lastCommand is Command commandFound)
             {
@@ -149,11 +137,11 @@ public class CommandService(IServiceScopeFactory scopeFactory)
                 };
 
                 /// The new command executed will be added to the database.
-                Command newCommand = await commandDataRepository.AddAsync(commandModel);
+                Command newCommand = await this.commandDataRepository.AddAsync(commandModel);
 
                 /// The last command executed will be updated with the new command executed.
                 lastCommand.ReplacedByCommandId = newCommand.Id;
-                return await commandDataRepository.UpdateAsync(lastCommand);
+                return await this.commandDataRepository.UpdateAsync(lastCommand);
             }
         }
 
