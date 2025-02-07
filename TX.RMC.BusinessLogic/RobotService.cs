@@ -33,7 +33,7 @@ public class RobotService(IServiceScopeFactory scopeFactory)
         ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
 
         /// Get last command executed by robot.
-        Command? command = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+        Command? command = await commandDataRepository.GetLastCommandExecutedAsync(robotModel!.Id);
 
         /// If no command executed return stopped.
         /// Otherwise return the command executed

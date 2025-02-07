@@ -8,6 +8,6 @@
 
     public interface IRobotDataRepository : IDataRepository<Robot>
     {
-        ValueTask<Robot?> GetByNameIdentityAsync(string robot);
+        ValueTask<Robot?> GetByNameIdentityAsync(string nameIdentity);
     }
 }

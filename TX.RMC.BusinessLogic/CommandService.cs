@@ -53,7 +53,7 @@ public class CommandService(IServiceScopeFactory scopeFactory)
             ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
 
             /// The last command executed will be retrieved.
-            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
 
             /// The last command executed will be used to update the new positions and direction.
             var posX = lastCommand?.PositionX ?? 0;
@@ -97,55 +97,64 @@ public class CommandService(IServiceScopeFactory scopeFactory)
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         using var scope = this.scopeFactory.CreateAsyncScope();
-        ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
+        IRobotDataRepository robotDataRepository = scope.ServiceProvider.GetRequiredService<IRobotDataRepository>();
 
-        /// The last command executed will be retrieved.
-        Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robot);
+        /// The robot will be retrieved.
+        Robot? robotModel = await robotDataRepository.GetByNameIdentityAsync(robot);
 
-        if (lastCommand is Command commandFound)
+        /// The robot must be found.
+        if (robotModel is Robot robotFound)
         {
-            /// The last command executed will be used to update the new positions and direction.
-            var posX = commandFound.PositionX;
-            var posY = commandFound.PositionY;
-            var direction = commandFound.Direction;
+            ICommandDataRepository commandDataRepository = scope.ServiceProvider.GetRequiredService<ICommandDataRepository>();
 
-            /// The last command executed will be reversed.
-            switch (lastCommand.Action)
+            /// The last command executed will be retrieved.
+            Command? lastCommand = await commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
+
+            if (lastCommand is Command commandFound)
             {
-                case ECommands.MoveForward:
-                    UpdatePositionAndDirection(ECommands.MoveBackward, ref direction, ref posX, ref posY);
-                    break;
-                case ECommands.MoveBackward:
-                    UpdatePositionAndDirection(ECommands.MoveForward, ref direction, ref posX, ref posY);
-                    break;
-                case ECommands.RotateLeft:
-                    UpdatePositionAndDirection(ECommands.RotateRight, ref direction, ref posX, ref posY);
-                    break;
-                case ECommands.RotateRight:
-                    UpdatePositionAndDirection(ECommands.RotateLeft, ref direction, ref posX, ref posY);
-                    break;
+                /// The last command executed will be used to update the new positions and direction.
+                var posX = commandFound.PositionX;
+                var posY = commandFound.PositionY;
+                var direction = commandFound.Direction;
+
+                /// The last command executed will be reversed.
+                switch (lastCommand.Action)
+                {
+                    case ECommands.MoveForward:
+                        UpdatePositionAndDirection(ECommands.MoveBackward, ref direction, ref posX, ref posY);
+                        break;
+                    case ECommands.MoveBackward:
+                        UpdatePositionAndDirection(ECommands.MoveForward, ref direction, ref posX, ref posY);
+                        break;
+                    case ECommands.RotateLeft:
+                        UpdatePositionAndDirection(ECommands.RotateRight, ref direction, ref posX, ref posY);
+                        break;
+                    case ECommands.RotateRight:
+                        UpdatePositionAndDirection(ECommands.RotateLeft, ref direction, ref posX, ref posY);
+                        break;
+                }
+
+                /// The new command will be executed.
+                UpdatePositionAndDirection(command, ref direction, ref posX, ref posY);
+
+                Command commandModel = new()
+                {
+                    Action = command,
+                    CreatedAt = DateTime.UtcNow,
+                    RobotId = robotFound.Id,
+                    UserId = userId,
+                    Direction = direction,
+                    PositionX = posX,
+                    PositionY = posY,
+                };
+
+                /// The new command executed will be added to the database.
+                Command newCommand = await commandDataRepository.AddAsync(commandModel);
+
+                /// The last command executed will be updated with the new command executed.
+                lastCommand.ReplacedByCommandId = newCommand.Id;
+                return await commandDataRepository.UpdateAsync(lastCommand);
             }
-
-            /// The new command will be executed.
-            UpdatePositionAndDirection(command, ref direction, ref posX, ref posY);
-
-            Command commandModel = new()
-            {
-                Action = command,
-                CreatedAt = DateTime.UtcNow,
-                RobotId = lastCommand.RobotId,
-                UserId = userId,
-                Direction = direction,
-                PositionX = posX,
-                PositionY = posY,
-            };
-
-            /// The new command executed will be added to the database.
-            Command newCommand = await commandDataRepository.AddAsync(commandModel);
-
-            /// The last command executed will be updated with the new command executed.
-            lastCommand.ReplacedByCommandId = newCommand.Id;
-            return await commandDataRepository.UpdateAsync(lastCommand);
         }
 
         return null;
