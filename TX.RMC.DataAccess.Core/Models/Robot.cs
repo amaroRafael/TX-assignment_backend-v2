@@ -7,19 +7,8 @@
 
     public class Robot : IModel
     {
-        public Robot(string nameIdentity)
-        {
-            this.NameIdentity = nameIdentity;
-        }
-
-        public Robot(Guid id, string nameIdentity)
-            : this(nameIdentity)
-        {
-            this.Id = id;
-        }
-
         public Guid Id { get; set; }
 
-        public string NameIdentity { get; set; }
+        public string NameIdentity { get; set; } = string.Empty;
     }
 }

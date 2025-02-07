@@ -7,28 +7,14 @@
 
     public class User : IModel
     {
-        public User(string name, string username, string secret, string salt)
-        {
-            this.Name = name;
-            this.Username = username;
-            this.Secret = secret;
-            this.Salt = salt;
-        }
-
-        public User(Guid id, string name, string username, string secret, string salt)
-            : this(name, username, secret, salt)
-        {
-            this.Id = id;
-        }
-
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
-        public string Secret { get; set; }
+        public string Secret { get; set; } = string.Empty;
 
-        public string Salt { get; set; }
+        public string Salt { get; set; } = string.Empty;
     }
 }

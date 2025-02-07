@@ -66,7 +66,7 @@ public class UserService(IServiceScopeFactory scopeFactory)
         string secret = Pbkdf2Hasher.ComputeHash(password, salt);
         string saltBase64 = Convert.ToBase64String(salt);
 
-        return await userRepository.AddAsync(new User(name, username, secret, saltBase64));
+        return await userRepository.AddAsync(new User { Name = name, Username = username, Secret = secret, Salt = saltBase64 });
     }
 
     /// <summary>
