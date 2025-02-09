@@ -28,7 +28,7 @@ public class HistoryController(RobotService robotService) : ApiBaseController
     /// 
     /// </remarks>
     [HttpGet("{robot}")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse<HistoryItem>), Description = "Returns the robot commands executed most recently.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse<IEnumerable<HistoryItem>>), Description = "Returns the robot commands executed most recently.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If there is an error during the process.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> GetHistoryAsync(string robot, [FromQuery(Name = "count")] int count = 10)

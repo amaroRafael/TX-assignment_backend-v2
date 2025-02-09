@@ -1,8 +1,8 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using TX.RMC.Api.Services;
 using TX.RMC.Api.Utils;
 using TX.RMC.BusinessLogic;
@@ -10,6 +10,11 @@ using Microsoft.OpenApi.Models;
 using TX.RMC.DataService.MongoDB;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Newtonsoft;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using TX.RMC.Api.Swagger.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,7 +63,15 @@ builder.Services.AddAuthorizationBuilder()
         .RequireAuthenticatedUser()
         .Build());
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(o =>
+{
+    o.SerializerSettings.Converters.Add(new StringEnumConverter
+    {
+        NamingStrategy = new CamelCaseNamingStrategy()
+    });
+});
+
+builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -97,6 +110,8 @@ builder.Services.AddSwaggerGen(config =>
     // using System.Reflection;
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     config.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+    config.SchemaFilter<EnumTypesSchemaFilter>(xmlFilename);
 });
 
 var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
@@ -113,14 +128,18 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => TypedResults.LocalRedirect("~/swagger"));
 
 app.Run();
