@@ -1,6 +1,7 @@
 ﻿namespace TX.RMC.UnitTests;
 
 using TX.RMC.BusinessLogic;
+using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.UnitTests.Data;
 
 public class NUnitTestUserService
@@ -22,24 +23,16 @@ public class NUnitTestUserService
     }
 
     [Test]
-    public async Task TestAddUser()
+    public async Task TestUserService()
     {
-        var user = await this.userService.AddAsync("John Doe", username, password);
+        User? user = await this.userService.AddAsync("John Doe", username, password);
         this.userId = user?.Id ?? Guid.Empty;
 
         Assert.IsTrue(this.userId != Guid.Empty);
-    }
 
-    [Test]
-    public async Task TestGetById()
-    {
-        var user = await this.userService.GetAsync(this.userId);
+        user = await this.userService.GetAsync(this.userId);
         Assert.IsNotNull(user);
-    }
 
-    [Test]
-    public async Task TestValidateCredentials()
-    {
         var userId = await this.userService.ValidateCredentialsAsync(username, password);
         Assert.IsNotEmpty(userId);
     }

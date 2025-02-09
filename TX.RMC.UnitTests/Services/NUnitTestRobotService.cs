@@ -25,30 +25,18 @@ public class NUnitTestRobotService
     }
 
     [Test]
-    public async Task TestAddRobot()
+    public async Task TestRobotService()
     {
-        Robot robot = await this.robotService.AddAsync(RobotNameIdentifier);
+        Robot? robot = await this.robotService.AddAsync(RobotNameIdentifier);
         this.robotId = robot.Id;
         Assert.IsTrue(this.robotId != Guid.Empty);
-    }
 
-    [Test]
-    public async Task TestGetRobotById()
-    {
-        Robot? robot = await this.robotService.GetAsync(this.robotId);
+        robot = await this.robotService.GetAsync(this.robotId);
         Assert.IsNotNull(robot);
-    }
 
-    [Test]
-    public async Task TestGetRobotByNameIdentity()
-    {
         string status = await this.robotService.GetStatusAsync(RobotNameIdentifier);
         Assert.IsNotEmpty(status);
-    }
 
-    [Test]
-    public async Task TestGetRobotCommandHistory()
-    {
         IEnumerable<(Guid Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);
         Assert.IsTrue(!commandHistory.Any());
 

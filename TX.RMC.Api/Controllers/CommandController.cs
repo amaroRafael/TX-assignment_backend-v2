@@ -128,11 +128,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     {
         try
         {
-            Command command = await this.commandService.GetAsync(id);
+            Command? command = await this.commandService.GetAsync(id);
             if (command != null)
             {
-                Robot robot = await this.robotService.GetAsync(command.RobotId);
-                DataAccess.Core.Models.User user = await this.userService.GetAsync(command.UserId);
+                Robot? robot = await this.robotService.GetAsync(command.RobotId);
+                DataAccess.Core.Models.User? user = await this.userService.GetAsync(command.UserId);
 
                 return Ok(new
                 {

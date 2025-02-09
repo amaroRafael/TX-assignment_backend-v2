@@ -11,16 +11,17 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
 {
     private readonly ICommandDataRepository commandDataRepository = commandDataRepository;
     private readonly IRobotDataRepository robotDataRepository = robotDataRepository;
+    private readonly static int stepsToMove = 1;
 
     /// <summary>
     /// Retrieves command from database.
     /// </summary>
     /// <param name="id">Command identity.</param>
     /// <returns>Returns the command.</returns>
-    public async Task<Command> GetAsync(Guid id)
+    public async Task<Command?> GetAsync(Guid id)
     {
         /// The command will be retrieved.
-        Command command = await this.commandDataRepository.GetByIdAsync(id);
+        Command? command = await this.commandDataRepository.GetByIdAsync(id);
         return command;
     }
 
@@ -141,7 +142,9 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
 
                 /// The last command executed will be updated with the new command executed.
                 lastCommand.ReplacedByCommandId = newCommand.Id;
-                return await this.commandDataRepository.UpdateAsync(lastCommand);
+                await this.commandDataRepository.UpdateAsync(lastCommand);
+
+                return newCommand;
             }
         }
 
@@ -169,11 +172,11 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
         {
             case ECommands.MoveForward:
                 /// The new position will be updated based on the old position.
-                UpdatePositions(direction, 1, ref posX, ref posY);
+                UpdatePositions(direction, stepsToMove, ref posX, ref posY);
                 break;
             case ECommands.MoveBackward:
                 /// The new position will be updated based on the old position.
-                UpdatePositions(direction, -1, ref posX, ref posY);
+                UpdatePositions(direction, -stepsToMove, ref posX, ref posY);
                 break;
             case ECommands.RotateLeft:
                 /// The new direction will be updated based on the old direction.
@@ -236,7 +239,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
             int degree = max / (values.Length - 1);
 
             /// If clockwise is true, the degree will be added (rotate right), otherwise it will be subtracted (rotate left).
-            if (!clockwise) degree += -1;
+            if (!clockwise) degree *= -1;
 
             /// The new direction will be updated.
             var newDirection = (int)direction + degree;

@@ -78,7 +78,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         if (dataRow != null)
         {
             // Loop through the properties of the model and set the value in the DataRow
-            foreach (var propertyInfo in typeof(User).GetProperties())
+            foreach (var propertyInfo in typeof(Command).GetProperties())
             {
                 // Set the value in the DataRow
                 dataRow[propertyInfo.Name] = propertyInfo.GetValue(command);
