@@ -30,7 +30,7 @@ jobs:
     - name: Build UnitTests
       run: dotnet build "${{ env.WORKING_TEST_DIRECTORY }}" --configuration Debug --no-restore
     - name: Run UnitTests
-      run: dotnet test "${{ env.WORKING_TEST_DIRECTORY }}" --no-build
+      run: dotnet test "${{ env.WORKING_TEST_DIRECTORY }}" --configuration Debug --no-build
     - name: Publish
       run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
     - name: Publish Artifacts
