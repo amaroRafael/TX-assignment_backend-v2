@@ -71,40 +71,4 @@ public class LoginController(IdentityService identityService, UserService userSe
             });
         }
     }
-
-    [HttpPost("add")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Add()
-    {
-        try
-        {
-            var result = await this.userService.AddAsync("John Doe", "johndoe", "password");
-            if (result != null)
-            {
-                return Ok(result);
-            }
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = errorInvalid
-            });
-        }
-        catch (ArgumentException argEx)
-        {
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = new[] { argEx.Message }
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = errorFailed
-            });
-        }
-    }
 }
