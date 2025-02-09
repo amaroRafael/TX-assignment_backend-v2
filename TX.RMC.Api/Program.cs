@@ -94,7 +94,7 @@ builder.Services.AddSwaggerGen(config =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
-var dbName = builder.Configuration["MongoDBName"];
+var dbName = builder.Configuration["MongoDBDatabase"];
 if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(dbName))
 {
     builder.Services.AddMongoDbServices(connectionString, dbName);
