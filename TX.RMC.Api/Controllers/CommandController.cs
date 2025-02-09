@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TX.RMC.Api.Extensions;
 using TX.RMC.Api.Models;
 using TX.RMC.BusinessLogic;
@@ -39,12 +40,10 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     ///     }
     /// 
     /// </remarks>
-    /// <response code="201">Returns the status of the robot.</response>
-    /// <response code="400">If command couldn't be sent to robot.</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(ApiResponse), Description = "Returns the status of the robot.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse), Description = "If command couldn't be sent to robot.")]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Post([FromBody] CommandRequest request)
     {
         var result = await commandService.SendAsync(request.Command, request.Robot, HttpContext.User.GetId());
@@ -82,12 +81,10 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     ///     }
     /// 
     /// </remarks>
-    /// <response code="202">Returns the status of the robot.</response>
-    /// <response code="400">If command couldn't be updated.</response>
     [HttpPut]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [SwaggerResponse(StatusCodes.Status202Accepted, Type = typeof(ApiResponse), Description = "Returns the status of the robot.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse), Description = "If command couldn't be updated.")]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Put([FromBody] CommandRequest request)
     {
         try
@@ -118,14 +115,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     ///     Authorization Bearer [token]
     /// 
     /// </remarks>
-    /// <reponse code="200">Returns the command details.</reponse>
-    /// <reponse code="404">If the command is not found.</reponse>
-    /// <response code="400">If command couldn't be retrieved.</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse), Description = "Returns the command details.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse), Description = "If the command is not found.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If command couldn't be retrieved.")]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Get(Guid id)
     {
         try

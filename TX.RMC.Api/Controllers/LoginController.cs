@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Diagnostics;
 using TX.RMC.Api.Services;
 using TX.RMC.BusinessLogic;
@@ -11,7 +12,7 @@ using TX.RMC.BusinessLogic;
 [ApiController]
 [AllowAnonymous]
 [Produces("application/json")]
-public class LoginController(IdentityService identityService, UserService userService) : ApiBaseController
+public class LoginController(IdentityService identityService, UserService userService) : ControllerBase
 {
     private readonly IdentityService identityService = identityService;
     private readonly UserService userService = userService;
@@ -36,8 +37,8 @@ public class LoginController(IdentityService identityService, UserService userSe
     /// <response code="200">Returns the authentication token (JWT).</response>
     /// <response code="400">If the username or password is invalid.</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Models.AuthenticationResponse), Description = "Returns the authentication token (JWT).")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If the username or password is invalid.")]
     public async Task<IActionResult> Post([FromForm(Name = "username")] string username, [FromForm(Name = "password")] string password)
     {
         try
@@ -48,15 +49,15 @@ public class LoginController(IdentityService identityService, UserService userSe
                 return Ok(result);
             }
 
-            return BadRequest(CreateFailResponse(new { Login = errorInvalid }));
+            return BadRequest(ApiBaseController.CreateFailResponse(new { Login = errorInvalid }));
         }
         catch (ArgumentException argEx)
         {
-            return BadRequest(CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
+            return BadRequest(ApiBaseController.CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
         }
         catch (Exception)
         {
-            return BadRequest(CreateErrorResponse(errorFailed));
+            return BadRequest(ApiBaseController.CreateErrorResponse(errorFailed));
         }
     }
 }

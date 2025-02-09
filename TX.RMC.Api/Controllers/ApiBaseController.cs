@@ -20,18 +20,30 @@ public abstract class ApiBaseController : ControllerBase
         return base.AcceptedAtAction(actionName, CreateSuccessResponse(value));
     }
 
-    private static object CreateSuccessResponse(object? value)
+    internal static object CreateSuccessResponse(object? value)
     {
-        return new { status = "success", data = value };
+        return new ApiResponse {Status = "success", Data = value };
     }
 
-    protected static object CreateErrorResponse(string value)
+    internal static object CreateErrorResponse(string value)
     {
-        return new { status = "error", message = value };
+        return new ErrorResponse { Status = "error", Message = value };
     }
 
-    protected static object CreateFailResponse(object? value)
+    internal static object CreateFailResponse(object? value)
     {
-        return new { status = "fail", data = value };
+        return new ApiResponse { Status = "fail", Data = value };
     }
+}
+
+internal class ErrorResponse
+{
+    public string Status { get; init; } = "error";
+    public string Message { get; init; } = null!;
+}
+
+internal class ApiResponse
+{
+    public string Status { get; init; } = "success";
+    public object? Data { get; init; } = null!;
 }
