@@ -108,10 +108,16 @@ builder.Services.AddSwaggerGen(config =>
     });
 
     // using System.Reflection;
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    config.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    var xmlApiFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlApiPath = Path.Combine(AppContext.BaseDirectory, xmlApiFilename);
+    config.IncludeXmlComments(xmlApiPath);
+    config.SchemaFilter<EnumTypesSchemaFilter>(xmlApiPath);
 
-    config.SchemaFilter<EnumTypesSchemaFilter>(xmlFilename);
+    var xmlDataAccessCorePath = Path.Combine(AppContext.BaseDirectory, "TX.RMC.DataAccess.Core.xml");
+    config.IncludeXmlComments(xmlDataAccessCorePath);
+    config.SchemaFilter<EnumTypesSchemaFilter>(xmlDataAccessCorePath);
+
+    config.DocumentFilter<EnumTypesDocumentFilter>();
 });
 
 var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
