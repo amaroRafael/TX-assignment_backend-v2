@@ -1,0 +1,616 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TX RMC Api",
+    "version": "v1"
+  },
+  "paths": {
+    "/Command": {
+      "post": {
+        "tags": [
+          "Command"
+        ],
+        "summary": "Accepts a command to control the robot (e.g., MoveForward, RotateRight).",
+        "description": "Sample request:\r\n            \r\n    POST /Command\r\n    Authorization Bearer [token]\r\n    Body:\r\n    {\r\n        \"command\": \"MoveForward\",\r\n        \"robot\": \"TX-010\"\r\n    }",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandFailedResponseApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Command"
+        ],
+        "summary": "Updates an existing command.",
+        "description": "Sample request:\r\n            \r\n    PUT /Command\r\n    Authorization Bearer [token]\r\n    Body:\r\n    {\r\n        \"command\": \"MoveBackward\",\r\n        \"robot\": \"TX-010\"\r\n    }",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandFailedResponseApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/Command/{id}": {
+      "get": {
+        "tags": [
+          "Command"
+        ],
+        "summary": "Gets the details of a command.",
+        "description": "GET /command/[id]\r\nAuthorization Bearer [token]",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The command identity.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDetailsResponseApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/History/{robot}": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Gets the robot command history executed.",
+        "description": "GET /history/[robot]\r\nAuthorization Bearer [token]",
+        "parameters": [
+          {
+            "name": "robot",
+            "in": "path",
+            "description": "The robot name identity",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "Maximum number of commands",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryItemApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Authenticates a user.",
+        "description": "POST /login\r\nContent-Type: multipart/form-data\r\nParameters:\r\n    username: string\r\n    password: string",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "The user name identity."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The user secret."
+                  }
+                }
+              },
+              "encoding": {
+                "username": {
+                  "style": "form"
+                },
+                "password": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the authentication token (JWT).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the username or password is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Status/{robot}": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Gets the status of the robot",
+        "description": "GET /status/[robot]\r\nAuthorization Bearer [token]",
+        "parameters": [
+          {
+            "name": "robot",
+            "in": "path",
+            "description": "The robot name identity.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthenticationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if the request was successful"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Access token (JWT)",
+            "nullable": true
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Token type",
+            "nullable": true
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "Expires in",
+            "format": "int32",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of errors",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Authentication response model"
+      },
+      "CommandDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": true,
+            "readOnly": true
+          },
+          "action": {
+            "$ref": "#/components/schemas/ECommands"
+          },
+          "executedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "robot": {
+            "$ref": "#/components/schemas/RobotResponse"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CommandDetailsResponseApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/CommandDetailsResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CommandFailedResponse": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CommandFailedResponseApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/CommandFailedResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CommandRequest": {
+        "required": [
+          "robot"
+        ],
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/ECommands"
+          },
+          "robot": {
+            "type": "string",
+            "description": "Robot name",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Command request model"
+      },
+      "ECommands": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EDirections": {
+        "enum": [
+          0,
+          45,
+          90,
+          135,
+          180,
+          225,
+          270,
+          315
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": true
+          },
+          "command": {
+            "type": "string",
+            "nullable": true
+          },
+          "executedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoryItemApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/HistoryItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RobotResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": true,
+            "readOnly": true
+          },
+          "nameIdentity": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "positionX": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "positionY": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "direction": {
+            "$ref": "#/components/schemas/EDirections"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "robot": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatusResponseApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StatusResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": true,
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Authorization header using the Bearer scheme. \\r\\n\\r\\n \r\n                    Enter 'Bearer' [space] and then your token in the text input below.\r\n                    \\r\\n\\r\\nExample: 'Bearer 12345abcdef'",
+        "scheme": "Bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
+}

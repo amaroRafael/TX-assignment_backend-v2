@@ -7,6 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using TX.RMC.Api.Extensions;
 using TX.RMC.Api.Models;
 using TX.RMC.BusinessLogic;
+using TX.RMC.DataAccess.Core.Enumerators;
 using TX.RMC.DataAccess.Core.Models;
 
 /// <summary>
@@ -41,8 +42,8 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// 
     /// </remarks>
     [HttpPost]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(ApiResponse), Description = "Returns the status of the robot.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse), Description = "If command couldn't be sent to robot.")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(ApiResponse<StatusController.StatusResponse>), Description = "Returns the status of the robot.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse<CommandFailedResponse>), Description = "If command couldn't be sent to robot.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Post([FromBody] CommandRequest request)
     {
@@ -53,10 +54,10 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
             if (result is not null)
             {
                 var status = await this.robotService.GetStatusAsync(request.Robot);
-                return CreatedAtAction(nameof(Post), new { request.Robot, status });
+                return CreatedAtAction(nameof(Post), new StatusController.StatusResponse { Robot = request.Robot, Status = status });
             }
 
-            return BadRequest(CreateFailResponse(new { Command = $"Failed to send command to robot: {request.Robot}" }));
+            return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to send command to robot: {request.Robot}" }));
         }
         catch (Exception)
         {
@@ -82,8 +83,8 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// 
     /// </remarks>
     [HttpPut]
-    [SwaggerResponse(StatusCodes.Status202Accepted, Type = typeof(ApiResponse), Description = "Returns the status of the robot.")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse), Description = "If command couldn't be updated.")]
+    [SwaggerResponse(StatusCodes.Status202Accepted, Type = typeof(ApiResponse<StatusController.StatusResponse>), Description = "Returns the status of the robot.")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ApiResponse<CommandFailedResponse>), Description = "If command couldn't be updated.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Put([FromBody] CommandRequest request)
     {
@@ -93,10 +94,10 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
             if (command is not null)
             {
                 var status = await this.robotService.GetStatusAsync(request.Robot);
-                return AcceptedAtAction(nameof(Put), new { request.Robot, status });
+                return AcceptedAtAction(nameof(Put), new StatusController.StatusResponse { Robot = request.Robot, Status = status });
             }
 
-            return BadRequest(CreateFailResponse(new { Command = $"Failed to update command to robot: {request.Robot}" }));
+            return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to update command to robot: {request.Robot}" }));
         }
         catch (Exception)
         {
@@ -116,8 +117,8 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// 
     /// </remarks>
     [HttpGet("{id}")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse), Description = "Returns the command details.")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse), Description = "If the command is not found.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse<CommandDetailsResponse>), Description = "Returns the command details.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<object>), Description = "If the command is not found.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If command couldn't be retrieved.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Get(Guid id)
@@ -132,34 +133,64 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
                 return Ok(new
                 {
-                    Command = new
+                    Command = new CommandDetailsResponse
                     {
-                        command.Id,
-                        command.Action,
-                        command.CreatedAt,
-                        Robot = new
+                        Id = command.Id,
+                        Action = command.Action,
+                        ExecutedAt = command.CreatedAt,
+                        Robot = new CommandDetailsResponse.RobotResponse
                         {
-                            robot?.Id,
-                            robot?.NameIdentity,
-                            command.PositionX,
-                            command.PositionY,
-                            command.Direction
+                            Id = robot?.Id,
+                            NameIdentity = robot?.NameIdentity,
+                            PositionX = command.PositionX,
+                            PositionY = command.PositionY,
+                            Direction = command.Direction
                         },
-                        User = new
+                        User = new CommandDetailsResponse.UserResponse
                         {
-                            user?.Id,
-                            user?.Name,
-                            user?.Username
+                            Id = user?.Id,
+                            Name = user?.Name,
+                            Username = user?.Username
                         }
                     }
                 });
             }
 
-            return NotFound(CreateFailResponse(null));
+            return NotFound(CreateFailResponse<object>(null));
         }
         catch (Exception)
         {
             return BadRequest(CreateErrorResponse(error));
+        }
+    }
+
+    class CommandFailedResponse
+    {
+        public string Command { get; internal set; } = null!;
+    }
+
+    class CommandDetailsResponse
+    {
+        public object Id { get; internal set; } = null!;
+        public ECommands Action { get; internal set; }
+        public DateTime ExecutedAt { get; internal set; }
+        public RobotResponse Robot { get; internal set; } = null!;
+        public UserResponse User { get; internal set; } = null!;
+
+        public class RobotResponse
+        {
+            public object? Id { get; internal set; }
+            public string? NameIdentity { get; internal set; }
+            public int PositionX { get; internal set; }
+            public int PositionY { get; internal set; }
+            public EDirections Direction { get; internal set; }
+        }
+
+        public class UserResponse
+        {
+            public object? Id { get; internal set; }
+            public string? Name { get; internal set; }
+            public string? Username { get; internal set; }
         }
     }
 }

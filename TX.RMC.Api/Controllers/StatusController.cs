@@ -28,7 +28,7 @@ public class StatusController(RobotService robotService) : ApiBaseController
     /// 
     /// </remarks>
     [HttpGet("{robot}")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse), Description = "Returns the robot status.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse<StatusResponse>), Description = "Returns the robot status.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If there is an error during the process.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Get(string robot)
@@ -36,11 +36,17 @@ public class StatusController(RobotService robotService) : ApiBaseController
         try
         {
             string status = await this.robotService.GetStatusAsync(robot);
-            return Ok(new { robot, status });
+            return Ok(new StatusResponse { Robot = robot, Status = status });
         }
         catch (Exception)
         {
             return BadRequest(CreateErrorResponse(error));
         }
+    }
+
+    internal class StatusResponse
+    {
+        public string Robot { get; init; } = null!;
+        public string Status { get; init; } = null!;
     }
 }

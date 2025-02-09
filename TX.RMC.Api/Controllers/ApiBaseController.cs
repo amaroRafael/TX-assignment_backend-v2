@@ -1,4 +1,5 @@
 ﻿namespace TX.RMC.Api.Controllers;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -20,9 +21,9 @@ public abstract class ApiBaseController : ControllerBase
         return base.AcceptedAtAction(actionName, CreateSuccessResponse(value));
     }
 
-    internal static object CreateSuccessResponse(object? value)
+    internal static object CreateSuccessResponse<T>(T? value)
     {
-        return new ApiResponse {Status = "success", Data = value };
+        return new ApiResponse<T> {Status = "success", Data = value };
     }
 
     internal static object CreateErrorResponse(string value)
@@ -30,9 +31,9 @@ public abstract class ApiBaseController : ControllerBase
         return new ErrorResponse { Status = "error", Message = value };
     }
 
-    internal static object CreateFailResponse(object? value)
+    internal static object CreateFailResponse<T>(T? value)
     {
-        return new ApiResponse { Status = "fail", Data = value };
+        return new ApiResponse<T> { Status = "fail", Data = value };
     }
 }
 
@@ -42,8 +43,8 @@ internal class ErrorResponse
     public string Message { get; init; } = null!;
 }
 
-internal class ApiResponse
+internal class ApiResponse<T>
 {
     public string Status { get; init; } = "success";
-    public object? Data { get; init; } = null!;
+    public T? Data { get; init; }
 }
