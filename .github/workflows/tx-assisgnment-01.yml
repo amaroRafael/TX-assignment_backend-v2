@@ -25,6 +25,8 @@ jobs:
       run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
     - name: Test
       run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
+    - name: Restore UnitTests
+      run: dotnet restore "${{ env.WORKING_TEST_DIRECTORY }}"
     - name: Build UnitTests
       run: dotnet build "${{ env.WORKING_TEST_DIRECTORY }}" --configuration Debug --no-restore
     - name: Run UnitTests
