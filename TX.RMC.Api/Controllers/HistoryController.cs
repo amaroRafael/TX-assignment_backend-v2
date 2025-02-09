@@ -8,10 +8,10 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
-public class HistoryController(RobotService robotService) : ControllerBase
+public class HistoryController(RobotService robotService) : ApiBaseController
 {
     private readonly RobotService robotService = robotService;
-    private static readonly string[] error = ["Operation could not be executed at this moment."];
+    private static readonly string error = "Operation could not be executed at this moment.";
 
     /// <summary>
     /// Gets the robot command history executed.
@@ -38,10 +38,7 @@ public class HistoryController(RobotService robotService) : ControllerBase
         }
         catch (Exception)
         {
-            return BadRequest(new
-            {
-                Error = error
-            });
+            return BadRequest(CreateErrorResponse(error));
         }
     }
 }

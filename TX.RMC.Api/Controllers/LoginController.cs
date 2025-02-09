@@ -10,12 +10,12 @@ using TX.RMC.BusinessLogic;
 [Route("login")]
 [ApiController]
 [AllowAnonymous]
-public class LoginController(IdentityService identityService, UserService userService) : ControllerBase
+public class LoginController(IdentityService identityService, UserService userService) : ApiBaseController
 {
     private readonly IdentityService identityService = identityService;
     private readonly UserService userService = userService;
-    private static readonly string[] errorInvalid = ["Invalid username or password"];
-    private static readonly string[] errorFailed = ["Failed to authenticate user."];
+    private static readonly string errorInvalid = "Invalid username and/or password";
+    private static readonly string errorFailed = "Failed to authenticate user.";
 
     /// <summary>
     /// Authenticates a user.
@@ -47,28 +47,15 @@ public class LoginController(IdentityService identityService, UserService userSe
                 return Ok(result);
             }
 
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = errorInvalid
-            });
+            return BadRequest(CreateFailResponse(new { Login = errorInvalid }));
         }
         catch (ArgumentException argEx)
         {
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = new[] { argEx.Message }
-            });
+            return BadRequest(CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.WriteLine(ex.Message);
-            return BadRequest(new
-            {
-                Success = false,
-                Errors = errorFailed
-            });
+            return BadRequest(CreateErrorResponse(errorFailed));
         }
     }
 }

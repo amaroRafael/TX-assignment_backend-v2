@@ -14,12 +14,12 @@ using TX.RMC.DataAccess.Core.Models;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
-public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService robotService, BusinessLogic.UserService userService) : ControllerBase
+public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService robotService, BusinessLogic.UserService userService) : ApiBaseController
 {
     private readonly CommandService commandService = commandService;
     private readonly RobotService robotService = robotService;
     private readonly UserService userService = userService;
-    private static readonly string[] error = ["Operation could not be executed at this moment."];
+    private static readonly string error = "Operation could not be executed at this moment.";
 
     /// <summary>
     /// Accepts a command to control the robot (e.g., MoveForward, RotateRight).
@@ -55,14 +55,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
                 return CreatedAtAction(nameof(Post), new { request.Robot, status });
             }
 
-            return BadRequest(new { Error = $"Failed to send command to robot: {request.Robot}" });
+            return BadRequest(CreateFailResponse(new { Command = $"Failed to send command to robot: {request.Robot}" }));
         }
         catch (Exception)
         {
-            return BadRequest(new
-            {
-                Error = error
-            });
+            return BadRequest(CreateErrorResponse(error));
         }
     }
 
@@ -99,14 +96,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
                 return AcceptedAtAction(nameof(Put), new { request.Robot, status });
             }
 
-            return BadRequest(new { Error = $"Failed to update command to robot: {request.Robot}" });
+            return BadRequest(CreateFailResponse(new { Command = $"Failed to update command to robot: {request.Robot}" }));
         }
         catch (Exception)
         {
-            return BadRequest(new
-            {
-                Error = error
-            });
+            return BadRequest(CreateErrorResponse(error));
         }
     }
 
@@ -159,14 +153,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
                 });
             }
 
-            return NotFound();
+            return NotFound(CreateFailResponse(null));
         }
         catch (Exception)
         {
-            return BadRequest(new
-            {
-                Error = error
-            });
+            return BadRequest(CreateErrorResponse(error));
         }
     }
 }
