@@ -7,7 +7,7 @@
 
     public class User : IModel
     {
-        public Guid Id { get; set; }
+        public object Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
 

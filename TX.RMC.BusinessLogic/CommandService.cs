@@ -18,7 +18,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// </summary>
     /// <param name="id">Command identity.</param>
     /// <returns>Returns the command.</returns>
-    public async Task<Command?> GetAsync(Guid id)
+    public async Task<Command?> GetAsync(object id)
     {
         /// The command will be retrieved.
         Command? command = await this.commandDataRepository.GetByIdAsync(id);
@@ -34,10 +34,10 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> SendAsync(ECommands command, string robot, Guid userId)
+    public async Task<Command?> SendAsync(ECommands command, string robot, object userId)
     {
         /// The robot and user are required.
-        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
+        if (userId is null) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         /// The robot will be retrieved.
@@ -84,10 +84,10 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> UpdateAsync(ECommands command, string robot, Guid userId)
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, object userId)
     {
         /// The user and robot are required.
-        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "User is required.");
+        if (userId is null) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         /// The robot will be retrieved.
@@ -142,7 +142,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
 
                 /// The last command executed will be updated with the new command executed.
                 lastCommand.ReplacedByCommandId = newCommand.Id;
-                await this.commandDataRepository.UpdateAsync(lastCommand);
+                await this.commandDataRepository.SetReplacedByCommandIdAsync(lastCommand.Id, newCommand.Id);
 
                 return newCommand;
             }

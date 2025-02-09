@@ -49,7 +49,7 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// <param name="robot">The robot name identity.</param>
     /// <param name="count">Number of history items to be retrieved. Deefault 10</param>
     /// <returns>Command history</returns>
-    public async ValueTask<IEnumerable<(Guid Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10)
+    public async ValueTask<IEnumerable<(object Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10)
     {
         /// Get robot from database.
         Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
@@ -60,8 +60,8 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
             /// Get last commands executed by robot.
             IEnumerable<Command> commands = await this.commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
 
-            IList<(Guid Id, string Command, DateTime ExecutedAt)> commandList = [];
-            IList<Guid> replaceCommandIds = [];
+            IList<(object Id, string Command, DateTime ExecutedAt)> commandList = [];
+            IList<object> replaceCommandIds = [];
 
             /// Iterate over commands and get the command text.
             foreach (Command command in commands.OrderByDescending(o => o.CreatedAt))
@@ -70,11 +70,11 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
 
                 string commandText = command.Action.ToString();
 
-                if (command.ReplacedByCommandId.HasValue)
+                if (command.ReplacedByCommandId is not null)
                 {
-                    Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId.Value);
+                    Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId);
 
-                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId.Value);
+                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId);
 
                     if (replacedCommand is not null)
                     {
@@ -97,7 +97,7 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// </summary>
     /// <param name="id">Robot identity.</param>
     /// <returns>Returns the robot.</returns>
-    public async Task<Robot?> GetAsync(Guid id)
+    public async Task<Robot?> GetAsync(object id)
     {
         /// Get robot from database.
         Robot? robot = await this.robotDataRepository.GetByIdAsync(id);

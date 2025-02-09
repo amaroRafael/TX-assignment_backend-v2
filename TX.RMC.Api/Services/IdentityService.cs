@@ -29,18 +29,11 @@ public class IdentityService(BusinessLogic.UserService businessLogic)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        try
-        {
-            string? userId = await businessLogic.ValidateCredentialsAsync(username, password);
+        string? userId = await businessLogic.ValidateCredentialsAsync(username, password);
 
-            AuthenticationResponse authenticationResult = !string.IsNullOrEmpty(userId) ? Authenticate(userId, username) : new AuthenticationResponse { Errors = ["Access not authorized!"] };
+        AuthenticationResponse authenticationResult = !string.IsNullOrEmpty(userId) ? Authenticate(userId, username) : new AuthenticationResponse { Errors = ["Access not authorized!"] };
 
-            return authenticationResult;
-        }
-        catch (Exception ex)
-        {
-            return new AuthenticationResponse { Errors = [ex.Message] };
-        }
+        return authenticationResult;
 
         static AuthenticationResponse Authenticate(string userId, string username)
         {

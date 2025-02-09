@@ -12,9 +12,9 @@ public class NUnitTestCommandService
     private RobotService robotService;
     private CommandService commandService;
     private string robot = "TX-01";
-    private Guid RobotId;
-    private Guid UserId;
-    private Guid CommandId;
+    private object RobotId;
+    private object UserId;
+    private object CommandId;
     private EDirections Direction;
     private int PositionX;
     private int PositionY;
@@ -31,13 +31,13 @@ public class NUnitTestCommandService
     [SetUp]
     public async Task Setup()
     {
-        if (this.RobotId == Guid.Empty)
+        if (this.RobotId is null)
         {
             var robotModel = await this.robotService.AddAsync(robot);
             this.RobotId = robotModel.Id;
         }
 
-        if (this.UserId == Guid.Empty)
+        if (this.UserId is null)
         {
             var user = await userService.AddAsync("John Doe", "johndoe", "password");
             this.UserId = user.Id;
@@ -51,7 +51,7 @@ public class NUnitTestCommandService
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);
-        Assert.IsTrue(this.CommandId != Guid.Empty);
+        Assert.IsNotNull(this.CommandId);
         Assert.IsTrue(this.Direction == EDirections.North);
         Assert.IsTrue(this.PositionX == 0);
         Assert.IsTrue(this.PositionY == 1);
@@ -64,7 +64,7 @@ public class NUnitTestCommandService
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);
-        Assert.IsTrue(this.CommandId != Guid.Empty);
+        Assert.IsNotNull(this.CommandId);
         Assert.IsTrue(this.Direction == EDirections.Northwest);
         Assert.IsTrue(this.PositionX == 0);
         Assert.IsTrue(this.PositionY == 0);
@@ -72,7 +72,7 @@ public class NUnitTestCommandService
 
     private void UpdateRobotVariablePostionAndDirection(DataAccess.Core.Models.Command? command)
     {
-        this.CommandId = command?.Id ?? Guid.Empty;
+        this.CommandId = command?.Id;
         this.Direction = command?.Direction ?? EDirections.North;
         this.PositionX = command?.PositionX ?? 0;
         this.PositionY = command?.PositionY ?? 0;

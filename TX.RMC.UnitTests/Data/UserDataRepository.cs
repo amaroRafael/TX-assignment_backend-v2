@@ -17,7 +17,7 @@ internal class UserDataRepository : DataRepository<User>, IUserDataRepository
         return ValueTask.FromResult(newUser);
     }
 
-    public ValueTask<User?> GetByIdAsync(Guid id)
+    public ValueTask<User?> GetByIdAsync(object id)
     {
         return ValueTask.FromResult(GetById(id));
     }

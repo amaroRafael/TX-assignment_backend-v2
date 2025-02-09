@@ -18,10 +18,10 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult(newCommand);
     }
 
-    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(Guid id, int count)
+    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object id, int count)
     {
         var commands = _dataTable.AsEnumerable()
-            .Where(row => row.Field<Guid>("RobotId") == id)
+            .Where(row => row.Field<object>("RobotId") == id)
             .Select(row => row)
             .OrderByDescending(row => row.Field<DateTime>("CreatedAt"))
             .Take(count);
@@ -43,15 +43,15 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<IEnumerable<Command>>(commandList);
     }
 
-    public ValueTask<Command?> GetByIdAsync(Guid id)
+    public ValueTask<Command?> GetByIdAsync(object id)
     {
         return ValueTask.FromResult(GetById(id));
     }
 
-    public ValueTask<Command?> GetLastCommandExecutedAsync(Guid robotId)
+    public ValueTask<Command?> GetLastCommandExecutedAsync(object robotId)
     {
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<Guid>("RobotId") == robotId
+                       where rows.Field<object>("RobotId") == robotId
                        select rows)
                        .OrderByDescending(row => row.Field<DateTime>("CreatedAt"))
                        .FirstOrDefault();
@@ -66,29 +66,24 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<Command?>(null);
     }
 
-    public ValueTask<Command> UpdateAsync(Command command)
+    public Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId)
     {
         // Gets the DataRow from the DataTable
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<Guid>("Id") == command.Id
+                       where rows.Field<object>("Id") == id
                        select rows)
                        .SingleOrDefault();
 
         // If DataRow was found, populate the DataRow with the data from the model
         if (dataRow != null)
         {
-            // Loop through the properties of the model and set the value in the DataRow
-            foreach (var propertyInfo in typeof(Command).GetProperties())
-            {
-                // Set the value in the DataRow
-                dataRow[propertyInfo.Name] = propertyInfo.GetValue(command);
-            }
+            // Set the value in the DataRow
+            dataRow["ReplacedByCommandId"] = replacedByCommandId;
 
             // Accept the changes
             this._dataTable.AcceptChanges();
         }
 
-        // Return the command
-        return ValueTask.FromResult(command);
+        return Task.CompletedTask;
     }
 }

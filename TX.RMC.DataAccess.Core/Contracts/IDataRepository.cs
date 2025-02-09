@@ -9,6 +9,6 @@
     public interface IDataRepository<TModel> where TModel : class, IModel
     {
         ValueTask<TModel> AddAsync(TModel model);
-        ValueTask<TModel?> GetByIdAsync(Guid id);
+        ValueTask<TModel?> GetByIdAsync(object id);
     }
 }

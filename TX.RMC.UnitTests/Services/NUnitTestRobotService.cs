@@ -10,7 +10,7 @@ public class NUnitTestRobotService
     private const string RobotNameIdentifier = "TX-01";
     private CommandDataRepository commandDataRepository;
     private RobotService robotService;
-    private Guid robotId;
+    private object robotId;
 
     public NUnitTestRobotService()
     {
@@ -29,7 +29,7 @@ public class NUnitTestRobotService
     {
         Robot? robot = await this.robotService.AddAsync(RobotNameIdentifier);
         this.robotId = robot.Id;
-        Assert.IsTrue(this.robotId != Guid.Empty);
+        Assert.IsNotNull(this.robotId);
 
         robot = await this.robotService.GetAsync(this.robotId);
         Assert.IsNotNull(robot);
@@ -37,7 +37,7 @@ public class NUnitTestRobotService
         string status = await this.robotService.GetStatusAsync(RobotNameIdentifier);
         Assert.IsNotEmpty(status);
 
-        IEnumerable<(Guid Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);
+        IEnumerable<(object Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);
         Assert.IsTrue(!commandHistory.Any());
 
         await this.commandDataRepository.AddAsync(

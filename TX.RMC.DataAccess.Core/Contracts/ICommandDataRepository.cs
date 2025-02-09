@@ -8,8 +8,8 @@
 
     public interface ICommandDataRepository : IDataRepository<Command>
     {
-        ValueTask<IEnumerable<Command>> GetAllByRobotAsync(Guid id, int count);
-        ValueTask<Command?> GetLastCommandExecutedAsync(Guid robotId);
-        ValueTask<Command> UpdateAsync(Command lastCommand);
+        ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count);
+        ValueTask<Command?> GetLastCommandExecutedAsync(object robotId);
+        Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId);
     }
 }

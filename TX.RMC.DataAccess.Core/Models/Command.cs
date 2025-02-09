@@ -8,13 +8,13 @@
 
     public class Command : IModel
     {
-        public Guid Id { get; set; }
+        public object Id { get; set; }
 
         public ECommands Action { get; set; }
 
-        public Guid RobotId { get; set; }
+        public object RobotId { get; set; }
 
-        public Guid UserId { get; set; }
+        public object UserId { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -24,6 +24,6 @@
 
         public EDirections Direction { get; set; }
 
-        public Guid? ReplacedByCommandId { get; set; }
+        public object? ReplacedByCommandId { get; set; }
     }
 }

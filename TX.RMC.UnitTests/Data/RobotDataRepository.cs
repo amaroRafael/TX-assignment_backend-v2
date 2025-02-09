@@ -18,7 +18,7 @@ internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
     }
 
 
-    public ValueTask<Robot?> GetByIdAsync(Guid id)
+    public ValueTask<Robot?> GetByIdAsync(object id)
     {
         return ValueTask.FromResult(GetById(id));
     }

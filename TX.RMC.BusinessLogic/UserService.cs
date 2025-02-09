@@ -69,7 +69,7 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <param name="id">User identity.</param>
     /// <returns>Returns the user.</returns>
-    public async Task<User?> GetAsync(Guid id)
+    public async Task<User?> GetAsync(object id)
     {
         User? user = await this.userDataRepository.GetByIdAsync(id);
         return user;

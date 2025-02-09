@@ -7,13 +7,15 @@ using TX.RMC.Api.Services;
 using TX.RMC.Api.Utils;
 using TX.RMC.BusinessLogic;
 using Microsoft.OpenApi.Models;
+using TX.RMC.DataService.MongoDB;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// configure strongly typed settings objects
-builder.Services.AddSingleton<IdentityService>();
+// Identity service
+builder.Services.AddTransient<IdentityService>();
+
 // configure jwt authentication
 var JwtSecretkey = Encoding.UTF8.GetBytes(ApiSecurityHelper.OauthKey);
 var tokenValidationParameters = new TokenValidationParameters
@@ -90,6 +92,13 @@ builder.Services.AddSwaggerGen(config =>
         }
     });
 });
+
+var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
+var dbName = builder.Configuration["MongoDBName"];
+if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(dbName))
+{
+    builder.Services.AddMongoDbServices(connectionString, dbName);
+}
 
 builder.Services.AddBusinessLogicServices();
 

@@ -3,14 +3,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using TX.RMC.Api.Services;
+using TX.RMC.BusinessLogic;
 
 [Route("login")]
 [ApiController]
 [AllowAnonymous]
-public class LoginController(IdentityService identityService) : ControllerBase
+public class LoginController(IdentityService identityService, UserService userService) : ControllerBase
 {
     private readonly IdentityService identityService = identityService;
+    private readonly UserService userService = userService;
     private static readonly string[] errorInvalid = ["Invalid username or password"];
     private static readonly string[] errorFailed = ["Failed to authenticate user."];
 
@@ -58,7 +61,44 @@ public class LoginController(IdentityService identityService) : ControllerBase
                 Errors = new[] { argEx.Message }
             });
         }
-        catch (Exception)
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = errorFailed
+            });
+        }
+    }
+
+    [HttpPost("add")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Add()
+    {
+        try
+        {
+            var result = await this.userService.AddAsync("John Doe", "johndoe", "password");
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = errorInvalid
+            });
+        }
+        catch (ArgumentException argEx)
+        {
+            return BadRequest(new
+            {
+                Success = false,
+                Errors = new[] { argEx.Message }
+            });
+        }
+        catch (Exception ex)
         {
             return BadRequest(new
             {
