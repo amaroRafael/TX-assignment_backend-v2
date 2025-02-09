@@ -8,6 +8,7 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
+[Produces("application/json")]
 public class StatusController(RobotService robotService) : ApiBaseController
 {
     private readonly RobotService robotService = robotService;
@@ -26,9 +27,11 @@ public class StatusController(RobotService robotService) : ApiBaseController
     /// 
     /// </remarks>
     /// <response code="200">Returns the robot status.</response>
+    /// <response code="400">If there is error during the process.</response>
     [HttpGet("{robot}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get(string robot)
     {
         try

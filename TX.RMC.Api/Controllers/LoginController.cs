@@ -10,6 +10,7 @@ using TX.RMC.BusinessLogic;
 [Route("login")]
 [ApiController]
 [AllowAnonymous]
+[Produces("application/json")]
 public class LoginController(IdentityService identityService, UserService userService) : ApiBaseController
 {
     private readonly IdentityService identityService = identityService;

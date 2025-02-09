@@ -8,6 +8,8 @@ using TX.RMC.Api.Utils;
 using TX.RMC.BusinessLogic;
 using Microsoft.OpenApi.Models;
 using TX.RMC.DataService.MongoDB;
+using Microsoft.Extensions.Options;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +93,10 @@ builder.Services.AddSwaggerGen(config =>
             new List<string>()
         }
     });
+
+    // using System.Reflection;
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    config.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");

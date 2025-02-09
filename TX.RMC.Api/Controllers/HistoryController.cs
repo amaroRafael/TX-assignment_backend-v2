@@ -8,6 +8,7 @@ using TX.RMC.BusinessLogic;
 [Route("[controller]")]
 [ApiController]
 [Authorize]
+[Produces("application/json")]
 public class HistoryController(RobotService robotService) : ApiBaseController
 {
     private readonly RobotService robotService = robotService;
@@ -29,6 +30,7 @@ public class HistoryController(RobotService robotService) : ApiBaseController
     [HttpGet("{robot}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetHistoryAsync(string robot, [FromQuery(Name = "count")] int count = 10)
     {
         try
