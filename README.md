@@ -123,7 +123,10 @@ Add the settings:
      Read documents: 20 mins
      Implement Api (Controllers and Authentication/Authorization): 1 hour
      Implement business logic: 2 hour
-     Implement MongoDB data service: 5 hours
+     Implement MongoDB data service: 5 hours 
+      **I worked 2 hours to create an account at Mongo DB Atlas, read documentation and connect to database using MongoDB.Driver for .NET.
+        After that I worked 3 hours trying to make Mongo DB + EF Core working it, but it was throwing exception and I couldn't find the reason.
+        It was my first time working with Mongo DB.**
      Make tests: 1 hour
      Refactor: 1 hour
      Documentation: 3 hours
