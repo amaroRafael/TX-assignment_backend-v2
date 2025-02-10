@@ -21,10 +21,13 @@ internal class Command
     [BsonElement("created_at")]
     public DateTime CreatedAt { get; set; }
 
-    public string Username { get; set; } = null!;
+    [BsonElement("user_id")]
+    public string UserId { get; set; } = null!;
 
+    [BsonElement("replace_by_command")]
     public Command? ReplacedByCommand { get; set; }
 
+    [BsonElement("log_state")]
     public LogStateData LogState { get; set; } = null!;
 
     public class LogStateData
