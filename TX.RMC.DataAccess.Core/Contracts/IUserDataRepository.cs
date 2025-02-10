@@ -9,7 +9,7 @@
 
     public interface IUserDataRepository : IDataRepository<User>
     {
-        ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default);
+        ValueTask<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         ValueTask<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
     }
 }

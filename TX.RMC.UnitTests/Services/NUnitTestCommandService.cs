@@ -12,9 +12,9 @@ public class NUnitTestCommandService
     private RobotService robotService;
     private CommandService commandService;
     private string robot = "TX-01";
-    private object? RobotId;
-    private object? UserId;
-    private object? CommandId;
+    private string? RobotId;
+    private string? UserId;
+    private string? CommandId;
     private EDirections Direction;
     private int PositionX;
     private int PositionY;
@@ -58,7 +58,7 @@ public class NUnitTestCommandService
 
         command = await this.commandService.GetAsync(this.robot, this.CommandId, CancellationToken.None);
         Assert.IsNotNull(command);
-        Assert.IsTrue((command?.Id ?? Guid.Empty) == this.CommandId);
+        Assert.IsTrue((command?.Id ?? Guid.Empty.ToString()) == this.CommandId);
 
         command = await this.commandService.UpdateAsync(ECommands.RotateLeft, this.robot, this.UserId, CancellationToken.None);
         UpdateRobotVariablePostionAndDirection(command);

@@ -7,7 +7,7 @@ using TX.RMC.UnitTests.Data;
 public class NUnitTestUserService
 {
     private UserService userService;
-    private object? userId;
+    private string? userId;
 
     private string username = "johndoe";
     private string password = "password";

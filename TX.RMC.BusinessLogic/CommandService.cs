@@ -18,7 +18,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// </summary>
     /// <param name="id">Command identity.</param>
     /// <returns>Returns the command.</returns>
-    public async Task<Command?> GetAsync(string robot, object id, CancellationToken cancellationToken)
+    public async Task<Command?> GetAsync(string robot, string id, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -40,7 +40,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> SendAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
+    public async Task<Command?> SendAsync(ECommands command, string robot, string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -92,7 +92,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> UpdateAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

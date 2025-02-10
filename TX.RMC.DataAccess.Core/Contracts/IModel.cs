@@ -6,6 +6,6 @@
 
     public interface IModel
     {
-        object Id { get; set; }
+        string Id { get; set; } 
     }
 }

@@ -17,7 +17,7 @@ internal class UserDataRepository : DataRepository<User>, IUserDataRepository
         return ValueTask.FromResult(newUser);
     }
 
-    public ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public ValueTask<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }

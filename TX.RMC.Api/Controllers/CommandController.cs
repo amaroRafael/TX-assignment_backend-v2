@@ -189,7 +189,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
     class CommandDetailsResponse
     {
-        public object Id { get; internal set; } = null!;
+        public string Id { get; internal set; } = null!;
         public ECommands Action { get; internal set; }
         public DateTime ExecutedAt { get; internal set; }
         public RobotResponse Robot { get; internal set; } = null!;
@@ -197,7 +197,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
         public class RobotResponse
         {
-            public object? Id { get; internal set; }
+            public string? Id { get; internal set; }
             public string? NameIdentity { get; internal set; }
             public int PositionX { get; internal set; }
             public int PositionY { get; internal set; }
@@ -206,7 +206,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
         public class UserResponse
         {
-            public object? Id { get; internal set; }
+            public string? Id { get; internal set; }
             public string? Name { get; internal set; }
             public string? Username { get; internal set; }
         }

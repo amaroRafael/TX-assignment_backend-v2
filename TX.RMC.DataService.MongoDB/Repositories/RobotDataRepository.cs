@@ -29,13 +29,13 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
         return TransformToRobot(robot);
     }
 
-    public async ValueTask<Robot?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public async ValueTask<Robot?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Robot> collection = database.GetCollection<Models.Robot>(collectionName);
 
-        var robotDb = await collection.Find(r => r.Id == id.ToString()).SingleOrDefaultAsync(cancellationToken);
+        var robotDb = await collection.Find(r => r.Id == id).SingleOrDefaultAsync(cancellationToken);
 
         return robotDb is null ? null : TransformToRobot(robotDb);
     }

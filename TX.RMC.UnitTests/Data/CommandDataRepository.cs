@@ -18,10 +18,10 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult(newCommand);
     }
 
-    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object id, int count, CancellationToken cancellationToken = default)
+    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(string id, int count, CancellationToken cancellationToken = default)
     {
         var commands = _dataTable.AsEnumerable()
-            .Where(row => row.Field<object>("RobotId") == id)
+            .Where(row => row.Field<string>("RobotId") == id)
             .Select(row => row)
             .OrderByDescending(row => row.Field<DateTime>("CreatedAt"))
             .Take(count);
@@ -43,15 +43,15 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<IEnumerable<Command>>(commandList);
     }
 
-    public ValueTask<Command?> GetByIdAsync(object robotId, object id, CancellationToken cancellationToken = default)
+    public ValueTask<Command?> GetByIdAsync(string robotId, string id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }
 
-    public ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default)
+    public ValueTask<Command?> GetLastCommandExecutedAsync(string robotId, CancellationToken cancellationToken = default)
     {
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<object>("RobotId") == robotId
+                       where rows.Field<string>("RobotId") == robotId
                        select rows)
                        .OrderByDescending(row => row.Field<DateTime>("CreatedAt"))
                        .FirstOrDefault();
@@ -70,7 +70,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
     {
         // Gets the DataRow from the DataTable
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<object>("Id") == command.Id
+                       where rows.Field<string>("Id") == command.Id
                        select rows)
                        .SingleOrDefault();
 

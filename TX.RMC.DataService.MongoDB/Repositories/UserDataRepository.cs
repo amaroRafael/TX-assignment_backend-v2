@@ -32,7 +32,7 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
         return model;
     }
 
-    public async ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public async ValueTask<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);

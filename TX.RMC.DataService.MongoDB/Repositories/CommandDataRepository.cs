@@ -24,15 +24,15 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
 
         Models.Command command = await AddAsync(model, robot, cancellationToken);
 
-        model.Id = command.Id;
+        model.Id = command.Id.ToString();
 
         return model;
     }
 
-    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(string robotId, int count, CancellationToken cancellationToken = default)
     {
         Models.Robot robot = await this.mongoDbContext.Robots
-            .Where(r => r.Id == robotId.ToString())
+            .Where(r => r.Id == robotId)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {robotId} not found.");
 
         var commands = robot.Commands
@@ -43,28 +43,28 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
         return commands.Select(c => TransformToCommand(c, robot.Id));
     }
 
-    public async ValueTask<Command?> GetByIdAsync(object robotId, object id, CancellationToken cancellationToken = default)
+    public async ValueTask<Command?> GetByIdAsync(string robotId, string id, CancellationToken cancellationToken = default)
     {
         IEnumerable<Models.Command> commands = await this.mongoDbContext.Robots
-            .Where(r => r.Id == robotId.ToString())
+            .Where(r => r.Id == robotId)
             .SelectMany(r => r.Commands)
             .ToListAsync(cancellationToken);
 
-        Guid commandId = Guid.Parse(id.ToString()!);
+        Guid commandId = Guid.Parse(id);
         Models.Command? command = commands.FirstOrDefault(c => c.Id == commandId);
 
-        return command == null ? null : TransformToCommand(command, robotId.ToString()!);
+        return command == null ? null : TransformToCommand(command, robotId!);
     }
 
-    public async ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default)
+    public async ValueTask<Command?> GetLastCommandExecutedAsync(string robotId, CancellationToken cancellationToken = default)
     {
         Models.Command? command = await this.mongoDbContext.Robots
-            .Where(r => r.Id == robotId.ToString())
+            .Where(r => r.Id == robotId)
             .SelectMany(r => r.Commands)
             .OrderByDescending(r => r.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var result = command == null ? null : TransformToCommand(command, robotId.ToString()!);
+        var result = command == null ? null : TransformToCommand(command, robotId);
 
         return await ValueTask.FromResult(result);
     }
@@ -72,12 +72,12 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
     public async Task SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default)
     {
         Models.Robot robot = await this.mongoDbContext.Robots
-            .Where(r => r.Id == replacedByCommand.RobotId.ToString())
+            .Where(r => r.Id == replacedByCommand.RobotId)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {replacedByCommand.RobotId} not found.");
 
         Models.Command replacedByCommandDB = await AddAsync(replacedByCommand, robot, cancellationToken);
 
-        Guid guid = Guid.Parse(command.Id.ToString()!);
+        Guid guid = Guid.Parse(command.Id);
         Models.Command commandDB = robot.Commands.Where(c => c.Id == guid).SingleOrDefault() ?? throw new InvalidOperationException($"Command with id {command.Id} not found.");
 
         commandDB.ReplacedByCommand = replacedByCommandDB;
@@ -127,7 +127,7 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
     {
         return new Command
         {
-            Id = command.Id,
+            Id = command.Id.ToString(),
             RobotId = robotId,
             UserId = command.UserId,
             Action = command.Action,
@@ -135,7 +135,7 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
             Direction = command.LogState.AfterExecution.Direction,
             PositionX = command.LogState.AfterExecution.PositionX,
             PositionY = command.LogState.AfterExecution.PositionY,
-            ReplacedByCommandId = command.ReplacedByCommand?.Id,
+            ReplacedByCommandId = command.ReplacedByCommand?.Id.ToString(),
         };
     }
 }

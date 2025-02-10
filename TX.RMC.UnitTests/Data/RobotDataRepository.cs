@@ -18,7 +18,7 @@ internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
     }
 
 
-    public ValueTask<Robot?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public ValueTask<Robot?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }

@@ -9,7 +9,7 @@
 
     public interface IRobotDataRepository : IDataRepository<Robot>
     {
-        ValueTask<Robot?> GetByIdAsync(object id, CancellationToken cancellationToken = default);
+        ValueTask<Robot?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         ValueTask<Robot?> GetByNameIdentityAsync(string nameIdentity, CancellationToken cancellationToken = default);
     }
 }

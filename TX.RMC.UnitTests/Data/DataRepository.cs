@@ -35,14 +35,14 @@ internal class DataRepository<T> where T : class, new()
     /// </summary>
     /// <param name="id">Model identity</param>
     /// <returns>Returns model retrieved from database</returns>
-    protected T? GetById(object id)
+    protected T? GetById(string id)
     {
         // Create a new instance of the model
         T model = new T();
 
         // Gets the DataRow from the DataTable
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<object>("Id") == id
+                       where rows.Field<string>("Id") == id
                        select rows)
                         .SingleOrDefault();
 
