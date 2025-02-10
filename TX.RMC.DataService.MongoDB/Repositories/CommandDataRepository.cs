@@ -36,13 +36,13 @@ internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDa
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
-        var commands = await collection.AsQueryable()
+        var commands = collection.AsQueryable()
             .Where(c => c.RobotId == robotId.ToString())
             .OrderByDescending(c => c.CreatedAt)
             .Take(count)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
-        return commands.Select(TransformToCommand);
+        return await ValueTask.FromResult(commands.Select(TransformToCommand));
     }
 
     public async ValueTask<Command?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
@@ -62,12 +62,14 @@ internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDa
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
-        Models.Command? command = await collection.AsQueryable()
+        Models.Command? command = collection.AsQueryable()
             .Where(c => c.RobotId == robotId.ToString())
             .OrderByDescending(c => c.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefault();
 
-        return command == null ? null : TransformToCommand(command);
+        var result = command == null ? null : TransformToCommand(command);
+
+        return await ValueTask.FromResult(result);
     }
 
     public async Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default)
