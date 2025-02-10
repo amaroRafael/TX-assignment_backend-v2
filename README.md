@@ -119,8 +119,8 @@ Add the settings:
   ``` 
 
 ## Api documentation
-  Url: **https://tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net/swagger**
-  "https://tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net" Can be replace by local domain if running at developer machine.
+  Document Url: **https://tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net/swagger**
+  ("tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net" Can be replace by local domain if running at developer machine.)
 
 
 
