@@ -46,7 +46,7 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Robot> collection = database.GetCollection<Models.Robot>(collectionName);
 
-        Models.Robot? robotDb = await collection.Find(r => r.NameIdentity == nameIdentity).SingleOrDefaultAsync(cancellationToken);
+        Models.Robot? robotDb = await collection.Find(r => r.Name == nameIdentity).SingleOrDefaultAsync(cancellationToken);
 
         return robotDb is null ? null : TransformToRobot(robotDb);
     }
@@ -56,7 +56,7 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
         return new Robot
         {
             Id = robot.Id,
-            NameIdentity = robot.NameIdentity,
+            NameIdentity = robot.Name,
         };
     }
 
@@ -65,7 +65,7 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
         return new Models.Robot
         {
             Id = model.Id?.ToString() ?? null!,
-            NameIdentity = model.NameIdentity,
+            Name = model.NameIdentity,
         };
     }
 }

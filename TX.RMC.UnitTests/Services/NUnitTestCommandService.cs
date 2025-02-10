@@ -56,7 +56,7 @@ public class NUnitTestCommandService
         Assert.IsTrue(this.PositionX == 0);
         Assert.IsTrue(this.PositionY == 1);
 
-        command = await this.commandService.GetAsync(this.CommandId, CancellationToken.None);
+        command = await this.commandService.GetAsync(this.robot, this.CommandId, CancellationToken.None);
         Assert.IsNotNull(command);
         Assert.IsTrue((command?.Id ?? Guid.Empty) == this.CommandId);
 

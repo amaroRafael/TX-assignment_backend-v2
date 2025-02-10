@@ -9,8 +9,9 @@
 
     public interface ICommandDataRepository : IDataRepository<Command>
     {
+        ValueTask<Command?> GetByIdAsync(object robotId, object id, CancellationToken cancellationToken = default);
         ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count, CancellationToken cancellationToken = default);
         ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default);
-        Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default);
+        Task SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default);
     }
 }

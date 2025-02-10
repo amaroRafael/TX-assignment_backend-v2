@@ -12,37 +12,24 @@ using System.Text;
 using System.Threading.Tasks;
 using TX.RMC.DataAccess.Core.Enumerators;
 
-public class Command
+internal class Command
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; } = null!;
+    public Guid Id { get; set; }
 
-    [BsonElement("action")]
     public ECommands Action { get; set; }
 
     [BsonElement("created_at")]
     public DateTime CreatedAt { get; set; }
 
-    [BsonElement("position_x")]
-    public int PositionX { get; set; }
+    public string Username { get; set; } = null!;
 
-    [BsonElement("position_y")]
-    public int PositionY { get; set; }
+    public Command? ReplacedByCommand { get; set; }
 
-    [BsonElement("direction")]
-    public EDirections Direction { get; set; }
+    public LogStateData LogState { get; set; } = null!;
 
-    [BsonElement("user_id")]
-    public string UserId { get; set; } = null!;
-    [BsonIgnore]
-    public virtual User User { get; set; } = null!;
-
-    [BsonElement("robot_id")]
-    public string RobotId { get; set; } = null!;
-    [BsonIgnore]
-    public virtual Robot Robot { get; set; } = null!;
-
-    [BsonElement("replaced_by_command_id")]
-    public string? ReplacedByCommandId { get; set; }
+    public class LogStateData
+    {
+        public State BeforeExecution { get; set; } = null!; 
+        public State AfterExecution { get; set; } = null!;
+    }
 }

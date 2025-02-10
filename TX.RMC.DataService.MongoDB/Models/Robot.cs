@@ -2,6 +2,7 @@
 
 using global::MongoDB.Bson;
 using global::MongoDB.Bson.Serialization.Attributes;
+using global::MongoDB.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,15 +12,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Robot
+[Collection("robots")]
+internal class Robot
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = null!;
 
-    [BsonElement("name_identity")]
-    public string NameIdentity { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    [BsonIgnore]
-    public virtual List<Command> Commands { get; set; } = null!;
+    [BsonElement("current_state")]
+    public State CurrentState { get; set; } = null!;
+
+    public List<Command> Commands { get; set; } = null!;
 }

@@ -43,7 +43,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<IEnumerable<Command>>(commandList);
     }
 
-    public ValueTask<Command?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public ValueTask<Command?> GetByIdAsync(object robotId, object id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }
@@ -66,11 +66,11 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<Command?>(null);
     }
 
-    public Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default)
+    public Task SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default)
     {
         // Gets the DataRow from the DataTable
         var dataRow = (from rows in this._dataTable.AsEnumerable()
-                       where rows.Field<object>("Id") == id
+                       where rows.Field<object>("Id") == command.Id
                        select rows)
                        .SingleOrDefault();
 
@@ -78,7 +78,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         if (dataRow != null)
         {
             // Set the value in the DataRow
-            dataRow["ReplacedByCommandId"] = replacedByCommandId;
+            dataRow["ReplacedByCommandId"] = replacedByCommand.Id;
 
             // Accept the changes
             this._dataTable.AcceptChanges();

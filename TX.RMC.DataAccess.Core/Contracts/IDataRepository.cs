@@ -10,6 +10,5 @@
     public interface IDataRepository<TModel> where TModel : class, IModel
     {
         ValueTask<TModel> AddAsync(TModel model, CancellationToken cancellationToken = default);
-        ValueTask<TModel?> GetByIdAsync(object id, CancellationToken cancellationToken = default);
     }
 }

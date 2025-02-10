@@ -78,7 +78,7 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
                 {
                     Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId);
 
-                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId, cancellationToken);
+                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.RobotId, command.ReplacedByCommandId, cancellationToken);
 
                     if (replacedCommand is not null)
                     {
