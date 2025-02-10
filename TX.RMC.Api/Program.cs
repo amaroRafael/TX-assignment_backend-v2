@@ -23,6 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Identity service
 builder.Services.AddTransient<IdentityService>();
 
+builder.Services.AddLogging();
+
 // configure jwt authentication
 var JwtSecretkey = Encoding.UTF8.GetBytes(ApiSecurityHelper.OauthKey);
 var tokenValidationParameters = new TokenValidationParameters

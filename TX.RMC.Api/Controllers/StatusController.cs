@@ -10,9 +10,10 @@ using TX.RMC.BusinessLogic;
 [ApiController]
 [Authorize]
 [Produces("application/json")]
-public class StatusController(RobotService robotService) : ApiBaseController
+public class StatusController(RobotService robotService, ILogger<StatusController> logger) : ApiBaseController
 {
     private readonly RobotService robotService = robotService;
+    private readonly ILogger<StatusController> logger = logger;
     private static readonly string error = "Operation could not be executed at this moment.";
 
 
@@ -38,8 +39,9 @@ public class StatusController(RobotService robotService) : ApiBaseController
             string status = await this.robotService.GetStatusAsync(robot, HttpContext.RequestAborted);
             return Ok(new StatusResponse { Robot = robot, Status = status });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [Get] method to retrieve robot status.");
             return BadRequest(CreateErrorResponse(error));
         }
     }

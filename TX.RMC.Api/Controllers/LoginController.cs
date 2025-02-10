@@ -12,10 +12,11 @@ using TX.RMC.BusinessLogic;
 [ApiController]
 [AllowAnonymous]
 [Produces("application/json")]
-public class LoginController(IdentityService identityService, UserService userService) : ControllerBase
+public class LoginController(IdentityService identityService, UserService userService, ILogger<LoginController> logger) : ControllerBase
 {
     private readonly IdentityService identityService = identityService;
     private readonly UserService userService = userService;
+    private readonly ILogger<LoginController> logger = logger;
     private static readonly string errorInvalid = "Invalid username and/or password";
     private static readonly string errorFailed = "Failed to authenticate user.";
 
@@ -53,10 +54,13 @@ public class LoginController(IdentityService identityService, UserService userSe
         }
         catch (ArgumentException argEx)
         {
+            this.logger.LogError(argEx,
+                $"An error of type ArgumentException occurred. Parameter {argEx.ParamName} with message \"{argEx.Message}\".");
             return BadRequest(ApiBaseController.CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [Post] method to authenticate user.");
             return BadRequest(ApiBaseController.CreateErrorResponse(errorFailed));
         }
     }

@@ -10,9 +10,10 @@ using TX.RMC.BusinessLogic;
 [ApiController]
 [Authorize]
 [Produces("application/json")]
-public class HistoryController(RobotService robotService) : ApiBaseController
+public class HistoryController(RobotService robotService, ILogger<HistoryController> logger) : ApiBaseController
 {
     private readonly RobotService robotService = robotService;
+    private readonly ILogger<HistoryController> logger = logger;
     private static readonly string error = "Operation could not be executed at this moment.";
 
     /// <summary>
@@ -38,8 +39,9 @@ public class HistoryController(RobotService robotService) : ApiBaseController
             var commandHistory = await this.robotService.GetCommandHistoryAsync(robot, count, HttpContext.RequestAborted);
             return Ok(commandHistory.Select(c => new HistoryItem { Id = c.Id, Command = c.Command, ExecutedAt = c.ExecutedAt }));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [GetHistoryAsync] method.");
             return BadRequest(CreateErrorResponse(error));
         }
     }

@@ -17,11 +17,12 @@ using TX.RMC.DataAccess.Core.Models;
 [ApiController]
 [Authorize]
 [Produces("application/json")]
-public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService robotService, BusinessLogic.UserService userService) : ApiBaseController
+public class CommandController(BusinessLogic.CommandService commandService, BusinessLogic.RobotService robotService, BusinessLogic.UserService userService, ILogger<CommandController> logger) : ApiBaseController
 {
     private readonly CommandService commandService = commandService;
     private readonly RobotService robotService = robotService;
     private readonly UserService userService = userService;
+    private readonly ILogger<CommandController> logger = logger;
     private static readonly string error = "Operation could not be executed at this moment.";
 
     /// <summary>
@@ -59,8 +60,9 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
             return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to send command to robot: {request.Robot}" }));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [Post] method to send command.");
             return BadRequest(CreateErrorResponse(error));
         }
     }
@@ -99,8 +101,9 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
             return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to update command to robot: {request.Robot}" }));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [Put] method to modify command.");
             return BadRequest(CreateErrorResponse(error));
         }
     }
@@ -158,8 +161,9 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
             return NotFound(CreateFailResponse<object>(null));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            this.logger.LogError(ex, "Error executing [Get] method to retrieve command.");
             return BadRequest(CreateErrorResponse(error));
         }
     }
