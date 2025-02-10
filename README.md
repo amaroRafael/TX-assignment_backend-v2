@@ -101,3 +101,29 @@ git commit -m "Your commit message"
 ```sh
 git push origin main
 ```
+
+
+## Run & Test Instructions (Local):
+On TX.RMC.Api project create a appsettings JSON file for Development environment. 
+File name:
+  ```sh 
+    appsettings.Development.json
+  ```
+
+Add the settings:
+  ```sh
+    "ConnectionStrings": {
+      "MongoDBConnection": "<<REPLACE WITH MONGO DB CONNECTION STRING>>"
+    },
+    "MongoDBDatabase": "<<REPLACE WITH DATABASE NAME>>",
+  ``` 
+
+
+  ## Time spent on task:
+     Read documents: 20 mins
+     Implement Api (Controllers and Authentication/Authorization): 1 hour
+     Implement business logic: 2 hour
+     Implement MongoDB data service: 5 hours
+     Make tests: 1 hour
+     Refactor: 1 hour
+     Documentation: 3 hours
