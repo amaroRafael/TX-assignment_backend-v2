@@ -120,18 +120,18 @@ Add the settings:
 
 ## Api documentation
   Document Url: **https://tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net/swagger**
-  ("tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net" Can be replace by local domain if running at developer machine.)
+  - ("tx-assisgnment-01-cedbeudad6hwdwbg.japaneast-01.azurewebsites.net" Can be replace by local domain if running at developer machine.)
 
 
 
 ## Time spent on task:
-  Read documents: 20 mins
-  Implement Api (Controllers and Authentication/Authorization): 1 hour
-  Implement business logic: 2 hour
-  Implement MongoDB data service: 5 hours 
+  - Read documents: 20 mins
+  - Implement Api (Controllers and Authentication/Authorization): 1 hour
+  - Implement business logic: 2 hour
+  - Implement MongoDB data service: 5 hours 
     **I worked 2 hours to create an account at Mongo DB Atlas, read documentation and connect to database using MongoDB.Driver for .NET.
       After that I worked 3 hours trying to make Mongo DB + EF Core working it, but it was throwing exception and I couldn't find the reason.
       It was my first time working with Mongo DB.**
-  Make tests: 1 hour
-  Refactor: 1 hour
-  Documentation: 3 hours
+  - Make tests: 1 hour
+  - Refactor: 1 hour
+  - Documentation: 3 hours
