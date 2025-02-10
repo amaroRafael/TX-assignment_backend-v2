@@ -21,12 +21,14 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <exception cref="ArgumentException">Parameter (username or password) is missing.</exception>
     /// <exception cref="ApplicationException">Username and/or password doesn't match data from database.</exception>
-    public async Task<string?> ValidateCredentialsAsync(string? username, string? password)
+    public async Task<string?> ValidateCredentialsAsync(string? username, string? password, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
         if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password is required.", nameof(password));
 
-        User? user = await this.userDataRepository.GetByUsernameAsync(username);
+        User? user = await this.userDataRepository.GetByUsernameAsync(username, cancellationToken);
 
         if (user is User userFound)
         {
@@ -47,21 +49,23 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <exception cref="ArgumentException">Parameter (name, username or password) is missing.</exception>
     /// <exception cref="InvalidCastException">User retrieved from data with the same username. Username must be unique.</exception>
-    public async ValueTask<User> AddAsync(string name, string username, string password)
+    public async ValueTask<User> AddAsync(string name, string username, string password, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required.", nameof(name));
         if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
         if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password is required.", nameof(password));
 
-        User? user = await this.userDataRepository.GetByUsernameAsync(username);
+        User? user = await this.userDataRepository.GetByUsernameAsync(username, cancellationToken);
 
-        if (user is User userFound) throw new InvalidCastException("Username is invalid. Already used.");
+        if (user is User userFound) throw new ArgumentException("Username is invalid. Already used.", nameof(username));
 
         byte[] salt = Pbkdf2Hasher.GenerateRandomSalt();
         string secret = Pbkdf2Hasher.ComputeHash(password, salt);
         string saltBase64 = Convert.ToBase64String(salt);
 
-        return await userDataRepository.AddAsync(new User { Name = name, Username = username, Secret = secret, Salt = saltBase64 });
+        return await userDataRepository.AddAsync(new User { Name = name, Username = username, Secret = secret, Salt = saltBase64 }, cancellationToken);
     }
 
     /// <summary>
@@ -69,9 +73,11 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <param name="id">User identity.</param>
     /// <returns>Returns the user.</returns>
-    public async Task<User?> GetAsync(object id)
+    public async Task<User?> GetAsync(object id, CancellationToken cancellationToken)
     {
-        User? user = await this.userDataRepository.GetByIdAsync(id);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        User? user = await this.userDataRepository.GetByIdAsync(id, cancellationToken);
         return user;
 
     }

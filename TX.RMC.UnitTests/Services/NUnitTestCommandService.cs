@@ -12,9 +12,9 @@ public class NUnitTestCommandService
     private RobotService robotService;
     private CommandService commandService;
     private string robot = "TX-01";
-    private object RobotId;
-    private object UserId;
-    private object CommandId;
+    private object? RobotId;
+    private object? UserId;
+    private object? CommandId;
     private EDirections Direction;
     private int PositionX;
     private int PositionY;
@@ -33,13 +33,13 @@ public class NUnitTestCommandService
     {
         if (this.RobotId is null)
         {
-            var robotModel = await this.robotService.AddAsync(robot);
+            var robotModel = await this.robotService.AddAsync(robot, CancellationToken.None);
             this.RobotId = robotModel.Id;
         }
 
         if (this.UserId is null)
         {
-            var user = await userService.AddAsync("John Doe", "johndoe", "password");
+            var user = await userService.AddAsync("John Doe", "johndoe", "password", CancellationToken.None);
             this.UserId = user.Id;
         }
     }
@@ -47,7 +47,7 @@ public class NUnitTestCommandService
     [Test]
     public async Task TestCommandService()
     {
-        Command? command = await this.commandService.SendAsync(ECommands.MoveForward, this.robot, this.UserId);
+        Command? command = await this.commandService.SendAsync(ECommands.MoveForward, this.robot, this.UserId, CancellationToken.None);
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);
@@ -56,11 +56,11 @@ public class NUnitTestCommandService
         Assert.IsTrue(this.PositionX == 0);
         Assert.IsTrue(this.PositionY == 1);
 
-        command = await this.commandService.GetAsync(this.CommandId);
+        command = await this.commandService.GetAsync(this.CommandId, CancellationToken.None);
         Assert.IsNotNull(command);
         Assert.IsTrue((command?.Id ?? Guid.Empty) == this.CommandId);
 
-        command = await this.commandService.UpdateAsync(ECommands.RotateLeft, this.robot, this.UserId);
+        command = await this.commandService.UpdateAsync(ECommands.RotateLeft, this.robot, this.UserId, CancellationToken.None);
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);

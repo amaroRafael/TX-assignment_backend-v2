@@ -35,7 +35,7 @@ public class HistoryController(RobotService robotService) : ApiBaseController
     {
         try
         {
-            var commandHistory = await this.robotService.GetCommandHistoryAsync(robot, count);
+            var commandHistory = await this.robotService.GetCommandHistoryAsync(robot, count, HttpContext.RequestAborted);
             return Ok(commandHistory.Select(c => new HistoryItem { Id = c.Id, Command = c.Command, ExecutedAt = c.ExecutedAt }));
         }
         catch (Exception)

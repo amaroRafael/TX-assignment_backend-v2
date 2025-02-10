@@ -17,9 +17,9 @@ using TX.RMC.BusinessLogic;
 /// <summary>
 /// Service for identity management.
 /// </summary>
-public class IdentityService(BusinessLogic.UserService businessLogic)
+public class IdentityService(BusinessLogic.UserService userService)
 {
-    private readonly UserService businessLogic = businessLogic;
+    private readonly UserService userService = userService;
 
     /// <summary>
     /// Login user.
@@ -29,7 +29,7 @@ public class IdentityService(BusinessLogic.UserService businessLogic)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string? userId = await businessLogic.ValidateCredentialsAsync(username, password);
+        string? userId = await userService.ValidateCredentialsAsync(username, password, CancellationToken.None);
 
         AuthenticationResponse authenticationResult = !string.IsNullOrEmpty(userId) ? Authenticate(userId, username) : new AuthenticationResponse { Errors = ["Access not authorized!"] };
 

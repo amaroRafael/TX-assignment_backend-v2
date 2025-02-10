@@ -7,7 +7,7 @@ using TX.RMC.UnitTests.Data;
 public class NUnitTestUserService
 {
     private UserService userService;
-    private object userId;
+    private object? userId;
 
     private string username = "johndoe";
     private string password = "password";
@@ -25,15 +25,15 @@ public class NUnitTestUserService
     [Test]
     public async Task TestUserService()
     {
-        User? user = await this.userService.AddAsync("John Doe", username, password);
+        User? user = await this.userService.AddAsync("John Doe", username, password, CancellationToken.None);
         this.userId = user?.Id;
 
         Assert.IsNotNull(this.userId);
 
-        user = await this.userService.GetAsync(this.userId);
+        user = await this.userService.GetAsync(this.userId, CancellationToken.None);
         Assert.IsNotNull(user);
 
-        var userId = await this.userService.ValidateCredentialsAsync(username, password);
+        var userId = await this.userService.ValidateCredentialsAsync(username, password, CancellationToken.None);
         Assert.IsNotEmpty(userId);
     }
 }

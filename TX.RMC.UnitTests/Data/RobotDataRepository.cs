@@ -10,7 +10,7 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
 {
-    public ValueTask<Robot> AddAsync(Robot robot)
+    public ValueTask<Robot> AddAsync(Robot robot, CancellationToken cancellationToken = default)
     {
         var newRobot = this.Add(robot);
 
@@ -18,12 +18,12 @@ internal class RobotDataRepository : DataRepository<Robot>, IRobotDataRepository
     }
 
 
-    public ValueTask<Robot?> GetByIdAsync(object id)
+    public ValueTask<Robot?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }
 
-    public ValueTask<Robot?> GetByNameIdentityAsync(string nameIdentity)
+    public ValueTask<Robot?> GetByNameIdentityAsync(string nameIdentity, CancellationToken cancellationToken = default)
     {
         Robot robot = new();
 

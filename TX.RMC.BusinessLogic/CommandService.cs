@@ -18,10 +18,12 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// </summary>
     /// <param name="id">Command identity.</param>
     /// <returns>Returns the command.</returns>
-    public async Task<Command?> GetAsync(object id)
+    public async Task<Command?> GetAsync(object id, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// The command will be retrieved.
-        Command? command = await this.commandDataRepository.GetByIdAsync(id);
+        Command? command = await this.commandDataRepository.GetByIdAsync(id, cancellationToken);
         return command;
     }
 
@@ -34,20 +36,22 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> SendAsync(ECommands command, string robot, object userId)
+    public async Task<Command?> SendAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// The robot and user are required.
         if (userId is null) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         /// The robot will be retrieved.
-        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot, cancellationToken);
 
         /// The robot must be found.
         if (robotModel is Robot robotFound)
         {
             /// The last command executed will be retrieved.
-            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
+            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id, cancellationToken);
 
             /// The last command executed will be used to update the new positions and direction.
             var posX = lastCommand?.PositionX ?? 0;
@@ -69,7 +73,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
             };
 
             /// The new command executed will be added to the database.
-            return await this.commandDataRepository.AddAsync(commandModel);
+            return await this.commandDataRepository.AddAsync(commandModel, cancellationToken);
         }
 
         return null;
@@ -84,20 +88,22 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> UpdateAsync(ECommands command, string robot, object userId)
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// The user and robot are required.
         if (userId is null) throw new ArgumentNullException(nameof(userId), "User is required.");
         if (string.IsNullOrWhiteSpace(robot)) throw new ArgumentNullException(nameof(robot), "Robot is required.");
 
         /// The robot will be retrieved.
-        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot, cancellationToken);
 
         /// The robot must be found.
         if (robotModel is Robot robotFound)
         {
             /// The last command executed will be retrieved.
-            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id);
+            Command? lastCommand = await this.commandDataRepository.GetLastCommandExecutedAsync(robotFound.Id, cancellationToken);
 
             if (lastCommand is Command commandFound)
             {
@@ -138,11 +144,11 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
                 };
 
                 /// The new command executed will be added to the database.
-                Command newCommand = await this.commandDataRepository.AddAsync(commandModel);
+                Command newCommand = await this.commandDataRepository.AddAsync(commandModel, cancellationToken);
 
                 /// The last command executed will be updated with the new command executed.
                 lastCommand.ReplacedByCommandId = newCommand.Id;
-                await this.commandDataRepository.SetReplacedByCommandIdAsync(lastCommand.Id, newCommand.Id);
+                await this.commandDataRepository.SetReplacedByCommandIdAsync(lastCommand.Id, newCommand.Id, cancellationToken);
 
                 return newCommand;
             }

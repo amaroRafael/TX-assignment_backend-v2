@@ -17,7 +17,7 @@ internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDa
     private const string collectionName = "commands";
     private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
 
-    public async ValueTask<Command> AddAsync(Command model)
+    public async ValueTask<Command> AddAsync(Command model, CancellationToken cancellationToken = default)
     {
         Models.Command command = TransformToCommandDb(model);
 
@@ -25,58 +25,58 @@ internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDa
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
-        await collection.InsertOneAsync(command);
+        await collection.InsertOneAsync(command,null, cancellationToken);
 
         return TransformToCommand(command);
     }
 
-    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count)
+    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
         var commands = await collection.AsQueryable()
-            .Where(c => c.RobotId == robotId)
+            .Where(c => c.RobotId == robotId.ToString())
             .OrderByDescending(c => c.CreatedAt)
             .Take(count)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return commands.Select(TransformToCommand);
     }
 
-    public async ValueTask<Command?> GetByIdAsync(object id)
+    public async ValueTask<Command?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
-        Models.Command? command = await collection.Find(c => c.Id == id.ToString()).SingleOrDefaultAsync();
+        Models.Command? command = await collection.Find(c => c.Id == id.ToString()).SingleOrDefaultAsync(cancellationToken);
 
         return command == null ? null : TransformToCommand(command);
     }
 
-    public async ValueTask<Command?> GetLastCommandExecutedAsync(object robotId)
+    public async ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
         Models.Command? command = await collection.AsQueryable()
-            .Where(c => c.RobotId == robotId)
+            .Where(c => c.RobotId == robotId.ToString())
             .OrderByDescending(c => c.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         return command == null ? null : TransformToCommand(command);
     }
 
-    public async Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId)
+    public async Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
 
-        await collection.UpdateOneAsync(c => c.Id == id.ToString(), Builders<Models.Command>.Update.Set(f => f.ReplacedByCommandId, replacedByCommandId));
+        await collection.UpdateOneAsync(c => c.Id == id.ToString(), Builders<Models.Command>.Update.Set(f => f.ReplacedByCommandId, replacedByCommandId), null, cancellationToken);
     }
 
     private static Command TransformToCommand(Models.Command command)

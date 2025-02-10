@@ -10,19 +10,19 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class UserDataRepository : DataRepository<User>, IUserDataRepository
 {
-    public ValueTask<User> AddAsync(User model)
+    public ValueTask<User> AddAsync(User model, CancellationToken cancellationToken = default)
     {
         var newUser = this.Add(model);
 
         return ValueTask.FromResult(newUser);
     }
 
-    public ValueTask<User?> GetByIdAsync(object id)
+    public ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }
 
-    public ValueTask<User?> GetByUsernameAsync(string username)
+    public ValueTask<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         DataRow? dataRow = (from rows in this._dataTable.AsEnumerable()
                             where rows.Field<string>("Username") == username

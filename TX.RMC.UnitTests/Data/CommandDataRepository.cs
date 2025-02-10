@@ -11,14 +11,14 @@ using TX.RMC.DataAccess.Core.Models;
 
 internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepository
 {
-    public ValueTask<Command> AddAsync(Command model)
+    public ValueTask<Command> AddAsync(Command model, CancellationToken cancellationToken = default)
     {
         var newCommand = Add(model);
 
         return ValueTask.FromResult(newCommand);
     }
 
-    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object id, int count)
+    public ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object id, int count, CancellationToken cancellationToken = default)
     {
         var commands = _dataTable.AsEnumerable()
             .Where(row => row.Field<object>("RobotId") == id)
@@ -43,12 +43,12 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<IEnumerable<Command>>(commandList);
     }
 
-    public ValueTask<Command?> GetByIdAsync(object id)
+    public ValueTask<Command?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
         return ValueTask.FromResult(GetById(id));
     }
 
-    public ValueTask<Command?> GetLastCommandExecutedAsync(object robotId)
+    public ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default)
     {
         var dataRow = (from rows in this._dataTable.AsEnumerable()
                        where rows.Field<object>("RobotId") == robotId
@@ -66,7 +66,7 @@ internal class CommandDataRepository : DataRepository<Command>, ICommandDataRepo
         return ValueTask.FromResult<Command?>(null);
     }
 
-    public Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId)
+    public Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default)
     {
         // Gets the DataRow from the DataTable
         var dataRow = (from rows in this._dataTable.AsEnumerable()

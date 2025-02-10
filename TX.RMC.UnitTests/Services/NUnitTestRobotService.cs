@@ -27,14 +27,14 @@ public class NUnitTestRobotService
     [Test]
     public async Task TestRobotService()
     {
-        Robot? robot = await this.robotService.AddAsync(RobotNameIdentifier);
+        Robot? robot = await this.robotService.AddAsync(RobotNameIdentifier, CancellationToken.None);
         this.robotId = robot.Id;
         Assert.IsNotNull(this.robotId);
 
-        robot = await this.robotService.GetAsync(this.robotId);
+        robot = await this.robotService.GetAsync(this.robotId, CancellationToken.None);
         Assert.IsNotNull(robot);
 
-        string status = await this.robotService.GetStatusAsync(RobotNameIdentifier);
+        string status = await this.robotService.GetStatusAsync(RobotNameIdentifier, CancellationToken.None);
         Assert.IsNotEmpty(status);
 
         IEnumerable<(object Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);

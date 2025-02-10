@@ -16,7 +16,7 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
     private const string collectionName = "users";
     private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
 
-    public async ValueTask<User> AddAsync(User model)
+    public async ValueTask<User> AddAsync(User model, CancellationToken cancellationToken = default)
     {
         Models.User userDb = TransformToUserDb(model);
 
@@ -24,7 +24,7 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.User> collection = database.GetCollection<Models.User>(collectionName);
 
-        await collection.InsertOneAsync(userDb);
+        await collection.InsertOneAsync(userDb, null, cancellationToken);
         
         // Update the model with the new Id
         model.Id = userDb.Id;
@@ -32,7 +32,7 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
         return model;
     }
 
-    public async ValueTask<User?> GetByIdAsync(object id)
+    public async ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
@@ -43,13 +43,13 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
         return userDb is null ? null : TransformToUser(userDb);
     }
 
-    public async ValueTask<User?> GetByUsernameAsync(string username)
+    public async ValueTask<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
         IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
         IMongoCollection<Models.User> collection = database.GetCollection<Models.User>(collectionName);
 
-        var userDb = await collection.Find(u => u.Username == username).SingleOrDefaultAsync();
+        var userDb = await collection.Find(u => u.Username == username).SingleOrDefaultAsync(cancellationToken);
 
         return userDb is null ? null : TransformToUser(userDb);
     }

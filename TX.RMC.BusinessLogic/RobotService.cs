@@ -20,16 +20,18 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// </summary>
     /// <param name="robot">The Robot name identity.</param>
     /// <returns>Current status of the robot.</returns>
-    public async ValueTask<string> GetStatusAsync(string robot)
+    public async ValueTask<string> GetStatusAsync(string robot, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// Get robot from database.
-        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot, cancellationToken);
 
         /// If robot not found return message.
         if (robotModel is null) return "Robot not found.";
 
         /// Get last command executed by robot.
-        Command? command = await this.commandDataRepository.GetLastCommandExecutedAsync(robotModel!.Id);
+        Command? command = await this.commandDataRepository.GetLastCommandExecutedAsync(robotModel!.Id, cancellationToken);
 
         /// If no command executed return stopped.
         /// Otherwise return the command executed
@@ -49,16 +51,18 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// <param name="robot">The robot name identity.</param>
     /// <param name="count">Number of history items to be retrieved. Deefault 10</param>
     /// <returns>Command history</returns>
-    public async ValueTask<IEnumerable<(object Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10)
+    public async ValueTask<IEnumerable<(object Id, string Command, DateTime ExecutedAt)>> GetCommandHistoryAsync(string robot, int count = 10, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// Get robot from database.
-        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot);
+        Robot? robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot, cancellationToken);
 
         /// If robot not found return empty list.
         if (robotModel is Robot robotFound)
         {
             /// Get last commands executed by robot.
-            IEnumerable<Command> commands = await this.commandDataRepository.GetAllByRobotAsync(robotFound.Id, count);
+            IEnumerable<Command> commands = await this.commandDataRepository.GetAllByRobotAsync(robotFound.Id, count, cancellationToken);
 
             IList<(object Id, string Command, DateTime ExecutedAt)> commandList = [];
             IList<object> replaceCommandIds = [];
@@ -74,7 +78,7 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
                 {
                     Command? replacedCommand = commands.FirstOrDefault(f => f.Id == command.ReplacedByCommandId);
 
-                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId);
+                    replacedCommand ??= await this.commandDataRepository.GetByIdAsync(command.ReplacedByCommandId, cancellationToken);
 
                     if (replacedCommand is not null)
                     {
@@ -97,16 +101,20 @@ public class RobotService(IRobotDataRepository robotDataRepository, ICommandData
     /// </summary>
     /// <param name="id">Robot identity.</param>
     /// <returns>Returns the robot.</returns>
-    public async Task<Robot?> GetAsync(object id)
+    public async Task<Robot?> GetAsync(object id, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         /// Get robot from database.
-        Robot? robot = await this.robotDataRepository.GetByIdAsync(id);
+        Robot? robot = await this.robotDataRepository.GetByIdAsync(id, cancellationToken);
         return robot;
     }
 
-    public async ValueTask<Robot> AddAsync(string name)
+    public async ValueTask<Robot> AddAsync(string name, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required.", nameof(name));
-        return await this.robotDataRepository.AddAsync(new Robot { NameIdentity = name });
+        return await this.robotDataRepository.AddAsync(new Robot { NameIdentity = name }, cancellationToken);
     }
 }

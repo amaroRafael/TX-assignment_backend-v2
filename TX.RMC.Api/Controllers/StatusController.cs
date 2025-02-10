@@ -35,7 +35,7 @@ public class StatusController(RobotService robotService) : ApiBaseController
     {
         try
         {
-            string status = await this.robotService.GetStatusAsync(robot);
+            string status = await this.robotService.GetStatusAsync(robot, HttpContext.RequestAborted);
             return Ok(new StatusResponse { Robot = robot, Status = status });
         }
         catch (Exception)

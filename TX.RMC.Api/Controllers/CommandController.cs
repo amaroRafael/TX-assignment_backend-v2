@@ -47,13 +47,13 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
     public async Task<IActionResult> Post([FromBody] CommandRequest request)
     {
-        var result = await commandService.SendAsync(request.Command, request.Robot, HttpContext.User.GetId());
+        var result = await commandService.SendAsync(request.Command, request.Robot, HttpContext.User.GetId(), HttpContext.RequestAborted);
 
         try
         {
             if (result is not null)
             {
-                var status = await this.robotService.GetStatusAsync(request.Robot);
+                var status = await this.robotService.GetStatusAsync(request.Robot, HttpContext.RequestAborted);
                 return CreatedAtAction(nameof(Post), new StatusController.StatusResponse { Robot = request.Robot, Status = status });
             }
 
@@ -90,10 +90,10 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     {
         try
         {
-            Command? command = await this.commandService.UpdateAsync(request.Command, request.Robot, HttpContext.User.GetId());
+            Command? command = await this.commandService.UpdateAsync(request.Command, request.Robot, HttpContext.User.GetId(), HttpContext.RequestAborted);
             if (command is not null)
             {
-                var status = await this.robotService.GetStatusAsync(request.Robot);
+                var status = await this.robotService.GetStatusAsync(request.Robot, HttpContext.RequestAborted);
                 return AcceptedAtAction(nameof(Put), new StatusController.StatusResponse { Robot = request.Robot, Status = status });
             }
 
@@ -125,11 +125,11 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     {
         try
         {
-            Command? command = await this.commandService.GetAsync(id);
+            Command? command = await this.commandService.GetAsync(id, HttpContext.RequestAborted);
             if (command != null)
             {
-                Robot? robot = await this.robotService.GetAsync(command.RobotId);
-                DataAccess.Core.Models.User? user = await this.userService.GetAsync(command.UserId);
+                Robot? robot = await this.robotService.GetAsync(command.RobotId, HttpContext.RequestAborted);
+                DataAccess.Core.Models.User? user = await this.userService.GetAsync(command.UserId, HttpContext.RequestAborted);
 
                 return Ok(new
                 {
