@@ -125,7 +125,7 @@ builder.Services.AddSwaggerGen(config =>
 
 var connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
 var dbName = builder.Configuration["MongoDBDatabase"];
-if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(dbName))
+if (!string.IsNullOrWhiteSpace(connectionString) && !string.IsNullOrWhiteSpace(dbName))
 {
     builder.Services.AddMongoDbServices(connectionString, dbName);
 }
@@ -135,7 +135,7 @@ builder.Services.AddBusinessLogicServices();
 // Gets application insights connection string from configuration
 string? applicationInsightsConnectionString = builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
 // If Application Insights Connection String was found then it will configure Application Insights logging
-if (!string.IsNullOrEmpty(applicationInsightsConnectionString))
+if (!string.IsNullOrWhiteSpace(applicationInsightsConnectionString))
 {
     builder.Logging.AddApplicationInsights(
         configureTelemetryConfiguration: config => config.ConnectionString = applicationInsightsConnectionString,
