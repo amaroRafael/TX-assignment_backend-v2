@@ -138,7 +138,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<object>), Description = "If the command is not found.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If command couldn't be retrieved.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
-    public async Task<IActionResult> Get(string robot, object id)
+    public async Task<IActionResult> Get(string robot, string id)
     {
         try
         {
