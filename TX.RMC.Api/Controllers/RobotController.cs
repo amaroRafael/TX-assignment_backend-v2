@@ -33,6 +33,12 @@ public class RobotController(RobotService robotService, ILogger<RobotController>
             Robot robot = await this.robotService.AddAsync(name, HttpContext.RequestAborted);
             return Ok(robot);
         }
+        catch (ArgumentException argEx)
+        {
+            this.logger.LogError(argEx,
+                $"Error executing [Post] method of type ArgumentException occurred when it was adding a new robot. Parameter {argEx.ParamName} with message \"{argEx.Message}\".");
+            return BadRequest(CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
+        }
         catch (Exception ex)
         {
             this.logger.LogError(ex, "Error executing [Post] method to add a new robot.");

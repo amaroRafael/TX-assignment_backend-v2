@@ -60,6 +60,12 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
             return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to send command to robot: {request.Robot}" }));
         }
+        catch (ArgumentException argEx)
+        {
+            this.logger.LogError(argEx,
+                $"Error executing [Post] method of type ArgumentException occurred when it was sending a command. Parameter {argEx.ParamName} with message \"{argEx.Message}\".");
+            return BadRequest(ApiBaseController.CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
+        }
         catch (Exception ex)
         {
             this.logger.LogError(ex, "Error executing [Post] method to send command.");
@@ -100,6 +106,12 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
             }
 
             return BadRequest(CreateFailResponse(new CommandFailedResponse { Command = $"Failed to update command to robot: {request.Robot}" }));
+        }
+        catch (ArgumentException argEx)
+        {
+            this.logger.LogError(argEx,
+                $"Error executing [Put] method of type ArgumentException occurred when it was updating a command. Parameter {argEx.ParamName} with message \"{argEx.Message}\".");
+            return BadRequest(ApiBaseController.CreateFailResponse(new { Parameter = argEx.ParamName, argEx.Message }));
         }
         catch (Exception ex)
         {
