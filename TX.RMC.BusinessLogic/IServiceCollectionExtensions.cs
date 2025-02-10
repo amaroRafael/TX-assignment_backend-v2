@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 public static class IServiceCollectionExtensions
 {
+    /// <summary>
+    /// Register Business Logic Services in the Service Collection
+    /// </summary>
     public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services)
     {
         services.AddTransient<CommandService>();

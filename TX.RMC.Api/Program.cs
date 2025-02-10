@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using TX.RMC.Api.Services;
 using TX.RMC.Api.Utils;
 using TX.RMC.BusinessLogic;
@@ -130,6 +131,18 @@ if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(dbName))
 }
 
 builder.Services.AddBusinessLogicServices();
+
+// Gets application insights connection string from configuration
+string? applicationInsightsConnectionString = builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
+// If Application Insights Connection String was found then it will configure Application Insights logging
+if (!string.IsNullOrEmpty(applicationInsightsConnectionString))
+{
+    builder.Logging.AddApplicationInsights(
+        configureTelemetryConfiguration: config => config.ConnectionString = applicationInsightsConnectionString,
+        configureApplicationInsightsLoggerOptions: options => { });
+
+    builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(f => f == LogLevel.Warning);
+}
 
 var app = builder.Build();
 
