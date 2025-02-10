@@ -23,6 +23,7 @@ public class HistoryController(RobotService robotService, ILogger<HistoryControl
     /// <param name="count">Maximum number of commands</param>
     /// <returns>Returns the most recent commands executed.</returns>
     /// <remarks>
+    /// Sample request:
     /// 
     ///     GET /history/[robot]
     ///     Authorization Bearer [token]

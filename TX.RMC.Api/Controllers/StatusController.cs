@@ -23,6 +23,7 @@ public class StatusController(RobotService robotService, ILogger<StatusControlle
     /// <param name="robot">The robot name identity.</param>
     /// <returns>THe current status.</returns>
     /// <remarks>
+    /// Sample request:
     /// 
     ///     GET /status/[robot]
     ///     Authorization Bearer [token]
