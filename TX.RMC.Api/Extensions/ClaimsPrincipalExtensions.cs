@@ -10,20 +10,14 @@ public static class ClaimsPrincipalExtensions
     /// <summary>
     /// Get the user id from the claims principal.
     /// </summary>
-    public static Guid GetId(this ClaimsPrincipal user)
+    public static string? GetId(this ClaimsPrincipal user)
     {
         if (user?.Identity?.IsAuthenticated ?? false)
         {
-            var claimValue = user.FindFirstValue(ClaimTypes.Sid);
-
-            if (!string.IsNullOrEmpty(claimValue))
-            {
-                if (Guid.TryParse(claimValue, out Guid id))
-                    return id;
-            }
+            return user.FindFirstValue(ClaimTypes.Sid);
         }
 
-        return Guid.Empty;
+        return null;
     }
 
     /// <summary>

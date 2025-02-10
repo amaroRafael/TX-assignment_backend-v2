@@ -126,6 +126,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// <param name="id">The command identity.</param>
     /// <returns>The command details.</returns>
     /// <remarks>
+    /// Sample Request:
     /// 
     ///     GET /command/[id]
     ///     Authorization Bearer [token]
@@ -136,7 +137,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<object>), Description = "If the command is not found.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If command couldn't be retrieved.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
-    public async Task<IActionResult> Get(Guid id)
+    public async Task<IActionResult> Get(string id)
     {
         try
         {
