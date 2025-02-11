@@ -12,17 +12,21 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.DataService.MongoDB.Options;
 
-internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDataRepository
+internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDataRepository
 {
-    private readonly MongoDbContext mongoDbContext = mongoDbContext;
+    private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
 
     public async ValueTask<Command> AddAsync(Command model, CancellationToken cancellationToken = default)
     {
-        Models.Robot robot = await this.mongoDbContext.Robots
+        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
+        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
+        using MongoDbContext dbContext = MongoDbContext.Create(database);
+
+        Models.Robot robot = await dbContext.Robots
             .Where(r => r.Id == model.RobotId.ToString())
             .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {model.RobotId} not found.");
 
-        Models.Command command = await AddAsync(model, robot, cancellationToken);
+        Models.Command command = AddCommandToRobot(model, ref robot);
 
         model.Id = command.Id.ToString();
 
@@ -31,7 +35,11 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
 
     public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(string robotId, int count, CancellationToken cancellationToken = default)
     {
-        Models.Robot robot = await this.mongoDbContext.Robots
+        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
+        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
+        using MongoDbContext dbContext = MongoDbContext.Create(database);
+
+        Models.Robot robot = await dbContext.Robots
             .Where(r => r.Id == robotId)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {robotId} not found.");
 
@@ -45,7 +53,11 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
 
     public async ValueTask<Command?> GetByIdAsync(string robotId, string id, CancellationToken cancellationToken = default)
     {
-        IEnumerable<Models.Command> commands = await this.mongoDbContext.Robots
+        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
+        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
+        using MongoDbContext dbContext = MongoDbContext.Create(database);
+
+        IEnumerable<Models.Command> commands = await dbContext.Robots
             .Where(r => r.Id == robotId)
             .SelectMany(r => r.Commands)
             .ToListAsync(cancellationToken);
@@ -58,35 +70,44 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
 
     public async ValueTask<Command?> GetLastCommandExecutedAsync(string robotId, CancellationToken cancellationToken = default)
     {
-        Models.Command? command = await this.mongoDbContext.Robots
+        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
+        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
+        using MongoDbContext dbContext = MongoDbContext.Create(database);
+
+        Models.Robot? robot = await dbContext.Robots
             .Where(r => r.Id == robotId)
-            .SelectMany(r => r.Commands)
-            .OrderByDescending(r => r.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
+
+        Models.Command? command = robot?.Commands
+            .OrderByDescending(r => r.CreatedAt)
+            .FirstOrDefault();
 
         var result = command == null ? null : TransformToCommand(command, robotId);
 
-        return await ValueTask.FromResult(result);
+        return result;
     }
 
     public async Task SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default)
     {
-        Models.Robot robot = await this.mongoDbContext.Robots
+        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
+        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
+        using MongoDbContext dbContext = MongoDbContext.Create(database);
+
+        Models.Robot robot = await dbContext.Robots
             .Where(r => r.Id == replacedByCommand.RobotId)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {replacedByCommand.RobotId} not found.");
 
-        Models.Command replacedByCommandDB = await AddAsync(replacedByCommand, robot, cancellationToken);
+        Models.Command replacedByCommandDB = AddCommandToRobot(replacedByCommand, ref robot);
 
         Guid guid = Guid.Parse(command.Id);
         Models.Command commandDB = robot.Commands.Where(c => c.Id == guid).SingleOrDefault() ?? throw new InvalidOperationException($"Command with id {command.Id} not found.");
 
-        commandDB.ReplacedByCommand = replacedByCommandDB;
+        commandDB.ReplacedByCommandId = replacedByCommandDB.Id;
 
-        this.mongoDbContext.Robots.Update(robot);
-        await this.mongoDbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Models.Command> AddAsync(Command model, Models.Robot robot, CancellationToken cancellationToken)
+    private Models.Command AddCommandToRobot(Command model, ref Models.Robot robot)
     {
         Models.Command command = new()
         {
@@ -118,8 +139,13 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
             Direction = model.Direction,
         };
 
-        this.mongoDbContext.Robots.Update(robot);
-        await this.mongoDbContext.SaveChangesAsync(cancellationToken);
+        if (robot.Commands == null)
+        {
+            robot.Commands = new List<Models.Command>();
+        }
+
+        robot.Commands.Add(command);
+
         return command;
     }
 
@@ -135,7 +161,7 @@ internal class CommandDataRepository(MongoDbContext mongoDbContext) : ICommandDa
             Direction = command.LogState.AfterExecution.Direction,
             PositionX = command.LogState.AfterExecution.PositionX,
             PositionY = command.LogState.AfterExecution.PositionY,
-            ReplacedByCommandId = command.ReplacedByCommand?.Id.ToString(),
+            ReplacedByCommandId = command.ReplacedByCommandId?.ToString(),
         };
     }
 }

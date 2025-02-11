@@ -25,7 +25,7 @@ internal class MongoDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Models.User>();
-        modelBuilder.Entity<Models.Robot>();
+        modelBuilder.Entity<Models.User>().Property(u => u.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<Models.Robot>().Property(r => r.Id).ValueGeneratedOnAdd();
     }
 }

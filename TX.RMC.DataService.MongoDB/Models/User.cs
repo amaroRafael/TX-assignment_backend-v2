@@ -2,6 +2,7 @@
 
 using global::MongoDB.Bson;
 using global::MongoDB.Bson.Serialization.Attributes;
+using global::MongoDB.Bson.Serialization.IdGenerators;
 using global::MongoDB.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,7 @@ using System.Threading.Tasks;
 [Collection("users")]
 internal class User
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
+    [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
     public string Id { get; set; } = null!;
 
     public string Name { get; set; } = null!;

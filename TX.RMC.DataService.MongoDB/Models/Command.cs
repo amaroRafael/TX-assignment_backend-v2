@@ -25,7 +25,7 @@ internal class Command
     public string UserId { get; set; } = null!;
 
     [BsonElement("replace_by_command")]
-    public Command? ReplacedByCommand { get; set; }
+    public Guid? ReplacedByCommandId { get; set; }
 
     [BsonElement("log_state")]
     public LogStateData LogState { get; set; } = null!;
