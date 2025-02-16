@@ -8,8 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using TX.RMC.DataAccess.Core.Enumerators;
 
-internal class State
+public class State
 {
+    public Guid Id { get; set; }
+
     [BsonElement("position_x")]
     public int PositionX { get; set; }
 

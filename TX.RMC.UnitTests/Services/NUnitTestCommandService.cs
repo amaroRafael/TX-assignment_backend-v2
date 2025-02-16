@@ -8,38 +8,39 @@ using TX.RMC.UnitTests.Data;
 
 public class NUnitTestCommandService
 {
+    private const string RobotNameIdentifier = "TX-01";
+    private const string username = "johndoe";
     private UserService userService;
     private RobotService robotService;
     private CommandService commandService;
-    private string robot = "TX-01";
     private string? RobotId;
     private string? UserId;
     private string? CommandId;
     private EDirections Direction;
     private int PositionX;
     private int PositionY;
-
-    public NUnitTestCommandService()
-    {
-        this.userService = new UserService(new UserDataRepository());
-        var robotDataRepository = new RobotDataRepository();
-        var commandDataRepository = new CommandDataRepository();
-        this.robotService = new RobotService(robotDataRepository, commandDataRepository);
-        this.commandService = new CommandService(commandDataRepository, robotDataRepository);
-    }
+    private RobotDataRepository robotRepository;
 
     [SetUp]
     public async Task Setup()
     {
+        var userRepository = UserDataRepository.Create();
+        this.robotRepository ??= RobotDataRepository.Create();
+        this.userService ??= new UserService(userRepository);
+        this.robotService ??= new RobotService(this.robotRepository, CommandDataRepository.Create());
+        this.commandService ??= new CommandService(CommandDataRepository.Create(), this.robotRepository);
+
         if (this.RobotId is null)
         {
-            var robotModel = await this.robotService.AddAsync(robot, CancellationToken.None);
+            var robotModel = await this.robotRepository.GetByNameIdentityAsync(RobotNameIdentifier, CancellationToken.None);
+            robotModel ??= await this.robotService.AddAsync(RobotNameIdentifier, CancellationToken.None);
             this.RobotId = robotModel.Id;
         }
 
         if (this.UserId is null)
         {
-            var user = await userService.AddAsync("John Doe", "johndoe", "password", CancellationToken.None);
+            var user = await userRepository.GetByUsernameAsync(username, CancellationToken.None) ?? await userService.AddAsync("John Doe", username, "password", CancellationToken.None);
+
             this.UserId = user.Id;
         }
     }
@@ -47,7 +48,7 @@ public class NUnitTestCommandService
     [Test]
     public async Task TestCommandService()
     {
-        Command? command = await this.commandService.SendAsync(ECommands.MoveForward, this.robot, this.UserId, CancellationToken.None);
+        Command? command = await this.commandService.SendAsync(ECommands.MoveForward, RobotNameIdentifier, this.UserId!, CancellationToken.None);
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);
@@ -56,11 +57,11 @@ public class NUnitTestCommandService
         Assert.IsTrue(this.PositionX == 0);
         Assert.IsTrue(this.PositionY == 1);
 
-        command = await this.commandService.GetAsync(this.robot, this.CommandId, CancellationToken.None);
+        command = await this.commandService.GetAsync(RobotNameIdentifier, this.CommandId, CancellationToken.None);
         Assert.IsNotNull(command);
         Assert.IsTrue((command?.Id ?? Guid.Empty.ToString()) == this.CommandId);
 
-        command = await this.commandService.UpdateAsync(ECommands.RotateLeft, this.robot, this.UserId, CancellationToken.None);
+        command = await this.commandService.UpdateAsync(ECommands.RotateLeft, RobotNameIdentifier, this.UserId!, CancellationToken.None);
         UpdateRobotVariablePostionAndDirection(command);
 
         Assert.IsNotNull(command);

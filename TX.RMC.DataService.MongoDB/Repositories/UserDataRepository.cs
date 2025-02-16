@@ -11,17 +11,13 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.DataService.MongoDB.Options;
 
-internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepository
+public class UserDataRepository(MongoDBContext dbContext) : IUserDataRepository
 {
-    private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
+    private readonly MongoDBContext dbContext = dbContext;
 
     public async ValueTask<User> AddAsync(User model, CancellationToken cancellationToken = default)
     {
         Models.User userDb = TransformToUserDb(model);
-
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        using MongoDbContext dbContext = MongoDbContext.Create(database);
 
         await dbContext.Users.AddAsync(userDb, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -34,10 +30,6 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
 
     public async ValueTask<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        using MongoDbContext dbContext = MongoDbContext.Create(database);
-
         var userDb = await dbContext.Users.Where(u => u.Id == id).SingleOrDefaultAsync(cancellationToken);
 
         return userDb is null ? null : TransformToUser(userDb);
@@ -45,10 +37,6 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
 
     public async ValueTask<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        using MongoDbContext dbContext = MongoDbContext.Create(database);
-
         var userDb = await dbContext.Users
             .Where(u => u.Username == username)
             .SingleOrDefaultAsync(cancellationToken);

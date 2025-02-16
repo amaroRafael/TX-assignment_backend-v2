@@ -148,7 +148,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
                 };
 
                 /// The last command executed will be updated with the new command executed.
-                await this.commandDataRepository.SetReplacedByCommandAsync(lastCommand, newCommand, cancellationToken);
+                newCommand = await this.commandDataRepository.SetReplacedByCommandAsync(lastCommand, newCommand, cancellationToken);
 
                 return newCommand;
             }

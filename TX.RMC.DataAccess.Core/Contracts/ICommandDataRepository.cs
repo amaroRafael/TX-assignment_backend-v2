@@ -12,6 +12,6 @@
         ValueTask<Command?> GetByIdAsync(string robotId, string id, CancellationToken cancellationToken = default);
         ValueTask<IEnumerable<Command>> GetAllByRobotAsync(string robotId, int count, CancellationToken cancellationToken = default);
         ValueTask<Command?> GetLastCommandExecutedAsync(string robotId, CancellationToken cancellationToken = default);
-        Task SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default);
+        ValueTask<Command> SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default);
     }
 }

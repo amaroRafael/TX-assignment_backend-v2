@@ -39,7 +39,7 @@ public static class IServiceCollectionExtensions
                 && level == LogLevel.Information);
         });
 #endif
-        services.AddDbContext<MongoDbContext>(
+        services.AddDbContext<MongoDBContext>(
             options =>
             {
                 options.UseMongoDB(mongoDBoptions.ConnectionString, mongoDBoptions.DatabaseName);

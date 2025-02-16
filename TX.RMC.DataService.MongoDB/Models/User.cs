@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 [Collection("users")]
-internal class User
+public class User
 {
     [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
     public string Id { get; set; } = null!;

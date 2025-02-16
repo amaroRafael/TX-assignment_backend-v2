@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 [Collection("robots")]
-internal class Robot
+public class Robot
 {
     [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
     public string Id { get; set; } = null!;

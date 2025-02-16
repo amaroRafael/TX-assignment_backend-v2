@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TX.RMC.DataAccess.Core.Enumerators;
 
-internal class Command
+public class Command
 {
     public Guid Id { get; set; }
 
@@ -32,6 +32,7 @@ internal class Command
 
     public class LogStateData
     {
+        public Guid Id { get; set; }
         public State BeforeExecution { get; set; } = null!; 
         public State AfterExecution { get; set; } = null!;
     }

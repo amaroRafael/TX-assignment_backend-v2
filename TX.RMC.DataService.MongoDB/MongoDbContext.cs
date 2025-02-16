@@ -4,20 +4,20 @@ using global::MongoDB.Driver;
 using global::MongoDB.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-internal class MongoDbContext : DbContext
+public class MongoDBContext : DbContext
 {
-    public MongoDbContext()
+    public MongoDBContext()
     { }
 
-    public MongoDbContext(DbContextOptions<MongoDbContext> options)
+    public MongoDBContext(DbContextOptions<MongoDBContext> options)
         : base(options)
     { }
 
     public DbSet<Models.User> Users { get; init; } = null!;
     public DbSet<Models.Robot> Robots { get; init; } = null!;
 
-    public static MongoDbContext Create(IMongoDatabase database) =>
-        new(new DbContextOptionsBuilder<MongoDbContext>()
+    public static MongoDBContext Create(IMongoDatabase database) =>
+        new(new DbContextOptionsBuilder<MongoDBContext>()
             .UseMongoDB(database.Client, database.DatabaseNamespace.DatabaseName)
             .Options);
 
