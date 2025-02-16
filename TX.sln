@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TX.RMC.UnitTests", "TX.RMC.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TX.RMC.DataService.MongoDB", "TX.RMC.DataService.MongoDB\TX.RMC.DataService.MongoDB.csproj", "{5EAE2F39-9FE5-4415-A1EF-56A9A9EC4347}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TX.RMC.FunctionApp", "TX.RMC.FunctionApp\TX.RMC.FunctionApp.csproj", "{847FA27C-96E2-471F-99D6-2D2E255AF1D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{5EAE2F39-9FE5-4415-A1EF-56A9A9EC4347}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EAE2F39-9FE5-4415-A1EF-56A9A9EC4347}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EAE2F39-9FE5-4415-A1EF-56A9A9EC4347}.Release|Any CPU.Build.0 = Release|Any CPU
+		{847FA27C-96E2-471F-99D6-2D2E255AF1D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{847FA27C-96E2-471F-99D6-2D2E255AF1D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{847FA27C-96E2-471F-99D6-2D2E255AF1D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{847FA27C-96E2-471F-99D6-2D2E255AF1D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
