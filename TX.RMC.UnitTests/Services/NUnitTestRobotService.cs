@@ -10,24 +10,21 @@ public class NUnitTestRobotService
     private const string RobotNameIdentifier = "TX-01";
     private CommandDataRepository commandDataRepository;
     private RobotService robotService;
-    private object robotId;
-
-    public NUnitTestRobotService()
-    {
-        this.commandDataRepository = new CommandDataRepository();
-        this.robotService = new RobotService(new RobotDataRepository(), this.commandDataRepository);
-    }
+    private string robotId = null!;
+    private RobotDataRepository robotRepository;
 
     [SetUp]
     public void Setup()
     {
-        
+        this.robotRepository ??= RobotDataRepository.Create();
+        this.commandDataRepository ??= CommandDataRepository.Create();
+        this.robotService ??= new RobotService(this.robotRepository, this.commandDataRepository);        
     }
 
     [Test]
     public async Task TestRobotService()
     {
-        Robot? robot = await this.robotService.AddAsync(RobotNameIdentifier, CancellationToken.None);
+        Robot? robot = await this.robotRepository.GetByNameIdentityAsync(RobotNameIdentifier, CancellationToken.None) ?? await this.robotService.AddAsync(RobotNameIdentifier, CancellationToken.None);
         this.robotId = robot.Id;
         Assert.IsNotNull(this.robotId);
 
@@ -37,7 +34,7 @@ public class NUnitTestRobotService
         string status = await this.robotService.GetStatusAsync(RobotNameIdentifier, CancellationToken.None);
         Assert.IsNotEmpty(status);
 
-        IEnumerable<(object Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);
+        IEnumerable<(string Id, string Command, DateTime ExecutedAt)> commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);
         Assert.IsTrue(!commandHistory.Any());
 
         await this.commandDataRepository.AddAsync(
@@ -46,11 +43,11 @@ public class NUnitTestRobotService
                 RobotId = this.robotId,
                 Action = ECommands.MoveForward,
                 CreatedAt = DateTime.Now,
-                Id = Guid.NewGuid(),
+                Id = Guid.NewGuid().ToString(),
                 Direction = EDirections.North,
                 PositionX = 1,
                 PositionY = 1,
-                UserId = Guid.NewGuid()
+                UserId = Guid.NewGuid().ToString()
             });
 
         commandHistory = await this.robotService.GetCommandHistoryAsync(RobotNameIdentifier);

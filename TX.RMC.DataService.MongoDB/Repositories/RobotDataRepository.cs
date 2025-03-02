@@ -11,42 +11,32 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.DataService.MongoDB.Options;
 
-internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRepository
+public class RobotDataRepository(MongoDBContext dbContext) : IRobotDataRepository
 {
-    private const string collectionName = "robots";
-    private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
+    private readonly MongoDBContext dbContext = dbContext;
 
     public async ValueTask<Robot> AddAsync(Robot model, CancellationToken cancellationToken = default)
     {
         Models.Robot robot = TransformToRobotDb(model);
 
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Robot> collection = database.GetCollection<Models.Robot>(collectionName);
+        await dbContext.Robots.AddAsync(robot, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
-        await collection.InsertOneAsync(robot, null, cancellationToken);
+        model.Id = robot.Id;
 
-        return TransformToRobot(robot);
+        return model;
     }
 
-    public async ValueTask<Robot?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public async ValueTask<Robot?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Robot> collection = database.GetCollection<Models.Robot>(collectionName);
-
-        var robotDb = await collection.Find(r => r.Id == id.ToString()).SingleOrDefaultAsync(cancellationToken);
+        var robotDb = await dbContext.Robots.Where(r => r.Id == id).SingleOrDefaultAsync(cancellationToken);
 
         return robotDb is null ? null : TransformToRobot(robotDb);
     }
 
     public async ValueTask<Robot?> GetByNameIdentityAsync(string nameIdentity, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Robot> collection = database.GetCollection<Models.Robot>(collectionName);
-
-        Models.Robot? robotDb = await collection.Find(r => r.NameIdentity == nameIdentity).SingleOrDefaultAsync(cancellationToken);
+        Models.Robot? robotDb = await dbContext.Robots.Where(r => r.Name == nameIdentity).SingleOrDefaultAsync(cancellationToken);
 
         return robotDb is null ? null : TransformToRobot(robotDb);
     }
@@ -56,7 +46,7 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
         return new Robot
         {
             Id = robot.Id,
-            NameIdentity = robot.NameIdentity,
+            NameIdentity = robot.Name,
         };
     }
 
@@ -64,8 +54,8 @@ internal class RobotDataRepository(MongoDBOptions mongoDBOptions) : IRobotDataRe
     {
         return new Models.Robot
         {
-            Id = model.Id?.ToString() ?? null!,
-            NameIdentity = model.NameIdentity,
+            Id = model.Id,
+            Name = model.NameIdentity,
         };
     }
 }

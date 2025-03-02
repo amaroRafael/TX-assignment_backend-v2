@@ -7,14 +7,14 @@
 
     public class User : IModel
     {
-        public object Id { get; set; }
+        public string Id { get; set; } = null!;
 
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = null!;
 
-        public string Username { get; set; } = string.Empty;
+        public string Username { get; set; } = null!;
 
-        public string Secret { get; set; } = string.Empty;
+        public string Secret { get; set; } = null!;
 
-        public string Salt { get; set; } = string.Empty;
+        public string Salt { get; set; } = null!;
     }
 }

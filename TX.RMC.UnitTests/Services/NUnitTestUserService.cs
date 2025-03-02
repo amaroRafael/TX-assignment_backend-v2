@@ -1,31 +1,31 @@
 ﻿namespace TX.RMC.UnitTests;
 
+using Microsoft.EntityFrameworkCore;
 using TX.RMC.BusinessLogic;
 using TX.RMC.DataAccess.Core.Models;
+using TX.RMC.DataService.MongoDB;
 using TX.RMC.UnitTests.Data;
 
 public class NUnitTestUserService
 {
     private UserService userService;
-    private object? userId;
+    private string? userId;
 
     private string username = "johndoe";
     private string password = "password";
-
-    public NUnitTestUserService()
-    {
-        this.userService ??= new UserService(new UserDataRepository());
-    }
+    private UserDataRepository userRepository;
 
     [SetUp]
     public void Setup()
     {
+        this.userRepository ??= UserDataRepository.Create();
+        this.userService ??= new UserService(this.userRepository);
     }
 
     [Test]
     public async Task TestUserService()
     {
-        User? user = await this.userService.AddAsync("John Doe", username, password, CancellationToken.None);
+        User? user = await this.userRepository.GetByUsernameAsync(username, CancellationToken.None) ?? await this.userService.AddAsync("John Doe", username, password, CancellationToken.None);
         this.userId = user?.Id;
 
         Assert.IsNotNull(this.userId);

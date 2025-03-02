@@ -14,35 +14,26 @@ using TX.RMC.DataAccess.Core.Enumerators;
 
 public class Command
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; } = null!;
+    public Guid Id { get; set; }
 
-    [BsonElement("action")]
     public ECommands Action { get; set; }
 
     [BsonElement("created_at")]
     public DateTime CreatedAt { get; set; }
 
-    [BsonElement("position_x")]
-    public int PositionX { get; set; }
-
-    [BsonElement("position_y")]
-    public int PositionY { get; set; }
-
-    [BsonElement("direction")]
-    public EDirections Direction { get; set; }
-
     [BsonElement("user_id")]
     public string UserId { get; set; } = null!;
-    [BsonIgnore]
-    public virtual User User { get; set; } = null!;
 
-    [BsonElement("robot_id")]
-    public string RobotId { get; set; } = null!;
-    [BsonIgnore]
-    public virtual Robot Robot { get; set; } = null!;
+    [BsonElement("replace_by_command")]
+    public Guid? ReplacedByCommandId { get; set; }
 
-    [BsonElement("replaced_by_command_id")]
-    public string? ReplacedByCommandId { get; set; }
+    [BsonElement("log_state")]
+    public LogStateData LogState { get; set; } = null!;
+
+    public class LogStateData
+    {
+        public Guid Id { get; set; }
+        public State BeforeExecution { get; set; } = null!; 
+        public State AfterExecution { get; set; } = null!;
+    }
 }

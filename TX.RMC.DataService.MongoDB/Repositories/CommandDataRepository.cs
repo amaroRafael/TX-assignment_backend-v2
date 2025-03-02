@@ -12,104 +12,140 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.DataService.MongoDB.Options;
 
-internal class CommandDataRepository(MongoDBOptions mongoDBOptions) : ICommandDataRepository
+public class CommandDataRepository(MongoDBContext dbContext) : ICommandDataRepository
 {
-    private const string collectionName = "commands";
-    private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
+    private readonly MongoDBContext dbContext = dbContext;
 
     public async ValueTask<Command> AddAsync(Command model, CancellationToken cancellationToken = default)
     {
-        Models.Command command = TransformToCommandDb(model);
+        Models.Robot robot = await this.dbContext.Robots
+            .Where(r => r.Id == model.RobotId.ToString())
+            .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {model.RobotId} not found.");
 
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
+        Models.Command command = AddCommandToRobot(model, ref robot);
 
-        await collection.InsertOneAsync(command,null, cancellationToken);
+        await this.dbContext.SaveChangesAsync(cancellationToken);
 
-        return TransformToCommand(command);
+        model.Id = command.Id.ToString();
+
+        return model;
     }
 
-    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(object robotId, int count, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<Command>> GetAllByRobotAsync(string robotId, int count, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
+        Models.Robot robot = await this.dbContext.Robots
+            .Where(r => r.Id == robotId)
+            .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {robotId} not found.");
 
-        var commands = collection.AsQueryable()
-            .Where(c => c.RobotId == robotId.ToString())
+        var commands = robot.Commands
             .OrderByDescending(c => c.CreatedAt)
             .Take(count)
             .ToList();
 
-        return await ValueTask.FromResult(commands.Select(TransformToCommand));
+        return commands.Select(c => TransformToCommand(c, robot.Id));
     }
 
-    public async ValueTask<Command?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public async ValueTask<Command?> GetByIdAsync(string robotId, string id, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
+        IEnumerable<Models.Command> commands = await this.dbContext.Robots
+            .Where(r => r.Id == robotId)
+            .SelectMany(r => r.Commands)
+            .ToListAsync(cancellationToken);
 
-        Models.Command? command = await collection.Find(c => c.Id == id.ToString()).SingleOrDefaultAsync(cancellationToken);
+        Guid commandId = Guid.Parse(id);
+        Models.Command? command = commands.FirstOrDefault(c => c.Id == commandId);
 
-        return command == null ? null : TransformToCommand(command);
+        return command == null ? null : TransformToCommand(command, robotId!);
     }
 
-    public async ValueTask<Command?> GetLastCommandExecutedAsync(object robotId, CancellationToken cancellationToken = default)
+    public async ValueTask<Command?> GetLastCommandExecutedAsync(string robotId, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
+        Models.Robot? robot = await this.dbContext.Robots
+            .Where(r => r.Id == robotId)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        Models.Command? command = collection.AsQueryable()
-            .Where(c => c.RobotId == robotId.ToString())
-            .OrderByDescending(c => c.CreatedAt)
+        Models.Command? command = robot?.Commands
+            .OrderByDescending(r => r.CreatedAt)
             .FirstOrDefault();
 
-        var result = command == null ? null : TransformToCommand(command);
+        var result = command == null ? null : TransformToCommand(command, robotId);
 
-        return await ValueTask.FromResult(result);
+        return result;
     }
 
-    public async Task SetReplacedByCommandIdAsync(object id, object replacedByCommandId, CancellationToken cancellationToken = default)
+    public async ValueTask<Command> SetReplacedByCommandAsync(Command command, Command replacedByCommand, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.Command> collection = database.GetCollection<Models.Command>(collectionName);
+        Models.Robot robot = await this.dbContext.Robots
+            .Where(r => r.Id == replacedByCommand.RobotId)
+            .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Robot with id {replacedByCommand.RobotId} not found.");
 
-        await collection.UpdateOneAsync(c => c.Id == id.ToString(), Builders<Models.Command>.Update.Set(f => f.ReplacedByCommandId, replacedByCommandId), null, cancellationToken);
+        Models.Command replacedByCommandDB = AddCommandToRobot(replacedByCommand, ref robot);
+        await this.dbContext.SaveChangesAsync(cancellationToken);
+
+        Guid guid = Guid.Parse(command.Id);
+        Models.Command commandDB = robot.Commands.Where(c => c.Id == guid).SingleOrDefault() ?? throw new InvalidOperationException($"Command with id {command.Id} not found.");
+
+        commandDB.ReplacedByCommandId = replacedByCommandDB.Id;
+        await this.dbContext.SaveChangesAsync(cancellationToken);
+
+        replacedByCommand.Id = replacedByCommandDB.Id.ToString();
+        return replacedByCommand;
     }
 
-    private static Command TransformToCommand(Models.Command command)
+    private Models.Command AddCommandToRobot(Command model, ref Models.Robot robot)
+    {
+        Models.Command command = new()
+        {
+            Action = model.Action,
+            CreatedAt = model.CreatedAt,
+            UserId = model.UserId.ToString() ?? string.Empty,
+            LogState = new()
+            {
+                BeforeExecution = new()
+                {
+                    PositionX = robot.CurrentState?.PositionX ?? 0,
+                    PositionY = robot.CurrentState?.PositionY ?? 0,
+                    Direction = robot.CurrentState?.Direction ?? DataAccess.Core.Enumerators.EDirections.North,
+                },
+                AfterExecution = new()
+                {
+                    PositionX = model.PositionX,
+                    PositionY = model.PositionY,
+                    Direction = model.Direction,
+                }
+            }
+        };
+
+        robot.CurrentState = new()
+        {
+            PositionX = model.PositionX,
+            PositionY = model.PositionY,
+            Direction = model.Direction,
+        };
+
+        if (robot.Commands == null)
+        {
+            robot.Commands = new List<Models.Command>();
+        }
+
+        robot.Commands.Add(command);
+
+        return command;
+    }
+
+    private static Command TransformToCommand(Models.Command command, string robotId)
     {
         return new Command
         {
-            Id = command.Id,
-            RobotId = command.RobotId,
+            Id = command.Id.ToString(),
+            RobotId = robotId,
             UserId = command.UserId,
             Action = command.Action,
             CreatedAt = command.CreatedAt,
-            Direction = command.Direction,
-            PositionX = command.PositionX,
-            PositionY = command.PositionY,
-            ReplacedByCommandId = command.ReplacedByCommandId,
-        };
-    }
-
-    private static Models.Command TransformToCommandDb(Command model)
-    {
-        return new Models.Command
-        {
-            Id = model.Id?.ToString() ?? null!,
-            RobotId = model.RobotId.ToString()!,
-            UserId = model.UserId.ToString()!,
-            Action = model.Action,
-            CreatedAt = model.CreatedAt,
-            Direction = model.Direction,
-            PositionX = model.PositionX,
-            PositionY = model.PositionY,
-            ReplacedByCommandId = model.ReplacedByCommandId?.ToString(),
+            Direction = command.LogState.AfterExecution.Direction,
+            PositionX = command.LogState.AfterExecution.PositionX,
+            PositionY = command.LogState.AfterExecution.PositionY,
+            ReplacedByCommandId = command.ReplacedByCommandId?.ToString(),
         };
     }
 }

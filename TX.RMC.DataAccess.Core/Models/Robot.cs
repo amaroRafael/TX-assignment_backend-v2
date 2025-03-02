@@ -7,8 +7,8 @@
 
     public class Robot : IModel
     {
-        public object Id { get; set; }
+        public string Id { get; set; } = null!;
 
-        public string NameIdentity { get; set; } = string.Empty;
+        public string NameIdentity { get; set; } = null!;
     }
 }

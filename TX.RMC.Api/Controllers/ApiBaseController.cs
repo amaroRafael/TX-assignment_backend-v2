@@ -21,17 +21,17 @@ public abstract class ApiBaseController : ControllerBase
         return base.AcceptedAtAction(actionName, CreateSuccessResponse(value));
     }
 
-    internal static object CreateSuccessResponse<T>(T? value)
+    internal static ApiResponse<T> CreateSuccessResponse<T>(T? value)
     {
         return new ApiResponse<T> {Status = "success", Data = value };
     }
 
-    internal static object CreateErrorResponse(string value)
+    internal static ErrorResponse CreateErrorResponse(string value)
     {
         return new ErrorResponse { Status = "error", Message = value };
     }
 
-    internal static object CreateFailResponse<T>(T? value)
+    internal static ApiResponse<T> CreateFailResponse<T>(T? value)
     {
         return new ApiResponse<T> { Status = "fail", Data = value };
     }

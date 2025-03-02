@@ -49,7 +49,7 @@ public class HistoryController(RobotService robotService, ILogger<HistoryControl
 
     public class  HistoryItem
     {
-        public object Id { get; init; } = null!;
+        public string Id { get; init; } = null!;
         public string Command { get; init; } = null!;
         public DateTime ExecutedAt { get; init; }
     }

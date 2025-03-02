@@ -11,45 +11,35 @@ using TX.RMC.DataAccess.Core.Contracts;
 using TX.RMC.DataAccess.Core.Models;
 using TX.RMC.DataService.MongoDB.Options;
 
-internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepository
+public class UserDataRepository(MongoDBContext dbContext) : IUserDataRepository
 {
-    private const string collectionName = "users";
-    private readonly MongoDBOptions mongoDBOptions = mongoDBOptions;
+    private readonly MongoDBContext dbContext = dbContext;
 
     public async ValueTask<User> AddAsync(User model, CancellationToken cancellationToken = default)
     {
         Models.User userDb = TransformToUserDb(model);
 
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.User> collection = database.GetCollection<Models.User>(collectionName);
+        await dbContext.Users.AddAsync(userDb, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
-        await collection.InsertOneAsync(userDb, null, cancellationToken);
-        
         // Update the model with the new Id
         model.Id = userDb.Id;
 
         return model;
     }
 
-    public async ValueTask<User?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    public async ValueTask<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.User> collection = database.GetCollection<Models.User>(collectionName);
-
-        var userDb = await collection.Find(u => u.Id == id.ToString()).SingleOrDefaultAsync();
+        var userDb = await dbContext.Users.Where(u => u.Id == id).SingleOrDefaultAsync(cancellationToken);
 
         return userDb is null ? null : TransformToUser(userDb);
     }
 
     public async ValueTask<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
-        using MongoClient client = new MongoClient(this.mongoDBOptions.ConnectionString);
-        IMongoDatabase database = client.GetDatabase(this.mongoDBOptions.DatabaseName);
-        IMongoCollection<Models.User> collection = database.GetCollection<Models.User>(collectionName);
-
-        var userDb = await collection.Find(u => u.Username == username).SingleOrDefaultAsync(cancellationToken);
+        var userDb = await dbContext.Users
+            .Where(u => u.Username == username)
+            .SingleOrDefaultAsync(cancellationToken);
 
         return userDb is null ? null : TransformToUser(userDb);
     }
@@ -70,7 +60,7 @@ internal class UserDataRepository(MongoDBOptions mongoDBOptions) : IUserDataRepo
     {
         return new Models.User
         {
-            Id = model.Id?.ToString() ?? null!,
+            Id = model.Id,
             Name = model.Name,
             Username = model.Username,
             Secret = model.Secret,

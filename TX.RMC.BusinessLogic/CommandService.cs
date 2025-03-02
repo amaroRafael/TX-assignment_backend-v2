@@ -18,12 +18,16 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// </summary>
     /// <param name="id">Command identity.</param>
     /// <returns>Returns the command.</returns>
-    public async Task<Command?> GetAsync(object id, CancellationToken cancellationToken)
+    public async Task<Command?> GetAsync(string robot, string id, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        Robot robotModel = await this.robotDataRepository.GetByNameIdentityAsync(robot, cancellationToken)
+            ?? throw new ArgumentException($"Robot ({robot}) not found.");
+
+
         /// The command will be retrieved.
-        Command? command = await this.commandDataRepository.GetByIdAsync(id, cancellationToken);
+        Command? command = await this.commandDataRepository.GetByIdAsync(robotModel.Id, id, cancellationToken);
         return command;
     }
 
@@ -36,7 +40,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> SendAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
+    public async Task<Command?> SendAsync(ECommands command, string robot, string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -88,7 +92,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
     /// <param name="userId">User identity.</param>
     /// <returns>Return the command data executed.</returns>
     /// <exception cref="ArgumentNullException">Robot and/or User is required.</exception>
-    public async Task<Command?> UpdateAsync(ECommands command, string robot, object userId, CancellationToken cancellationToken)
+    public async Task<Command?> UpdateAsync(ECommands command, string robot, string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -132,7 +136,7 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
                 /// The new command will be executed.
                 UpdatePositionAndDirection(command, ref direction, ref posX, ref posY);
 
-                Command commandModel = new()
+                Command newCommand = new()
                 {
                     Action = command,
                     CreatedAt = DateTime.UtcNow,
@@ -143,12 +147,8 @@ public class CommandService(ICommandDataRepository commandDataRepository, IRobot
                     PositionY = posY,
                 };
 
-                /// The new command executed will be added to the database.
-                Command newCommand = await this.commandDataRepository.AddAsync(commandModel, cancellationToken);
-
                 /// The last command executed will be updated with the new command executed.
-                lastCommand.ReplacedByCommandId = newCommand.Id;
-                await this.commandDataRepository.SetReplacedByCommandIdAsync(lastCommand.Id, newCommand.Id, cancellationToken);
+                newCommand = await this.commandDataRepository.SetReplacedByCommandAsync(lastCommand, newCommand, cancellationToken);
 
                 return newCommand;
             }

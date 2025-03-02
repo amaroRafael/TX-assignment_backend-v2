@@ -2,6 +2,8 @@
 
 using global::MongoDB.Bson;
 using global::MongoDB.Bson.Serialization.Attributes;
+using global::MongoDB.Bson.Serialization.IdGenerators;
+using global::MongoDB.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,24 +13,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+[Collection("users")]
 public class User
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
+    [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
     public string Id { get; set; } = null!;
 
-    [BsonElement("name")]
     public string Name { get; set; } = null!;
 
-    [BsonElement("username")]
     public string Username { get; set; } = null!;
 
-    [BsonElement("secret")]
     public string Secret { get; set; } = null!;
 
-    [BsonElement("salt")]
     public string Salt { get; set; } = null!;
-
-    [BsonIgnore]
-    public virtual List<Command> Commands { get; set; } = null!;
 }

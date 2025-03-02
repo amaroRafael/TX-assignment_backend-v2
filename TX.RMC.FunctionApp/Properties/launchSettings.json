@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "TX.RMC.FunctionApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7235"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 30301,
+      "useSSL": false
+    }
+  }
+}

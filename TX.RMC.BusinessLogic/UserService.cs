@@ -73,7 +73,7 @@ public class UserService(IUserDataRepository userDataRepository)
     /// </summary>
     /// <param name="id">User identity.</param>
     /// <returns>Returns the user.</returns>
-    public async Task<User?> GetAsync(object id, CancellationToken cancellationToken)
+    public async Task<User?> GetAsync(string id, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

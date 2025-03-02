@@ -123,6 +123,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     /// <summary>
     /// Gets the details of a command.
     /// </summary>
+    /// <param name="robot">The robot name identity.</param>
     /// <param name="id">The command identity.</param>
     /// <returns>The command details.</returns>
     /// <remarks>
@@ -132,19 +133,19 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
     ///     Authorization Bearer [token]
     /// 
     /// </remarks>
-    [HttpGet("{id}")]
+    [HttpGet("{robot}/{id}")]
     [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ApiResponse<CommandDetailsResponse>), Description = "Returns the command details.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<object>), Description = "If the command is not found.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse), Description = "If command couldn't be retrieved.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "If the user is not authenticated.")]
-    public async Task<IActionResult> Get(string id)
+    public async Task<IActionResult> Get(string robot, string id)
     {
         try
         {
-            Command? command = await this.commandService.GetAsync(id, HttpContext.RequestAborted);
+            Command? command = await this.commandService.GetAsync(robot, id, HttpContext.RequestAborted);
             if (command != null)
             {
-                Robot? robot = await this.robotService.GetAsync(command.RobotId, HttpContext.RequestAborted);
+                Robot? robotModel = await this.robotService.GetAsync(command.RobotId, HttpContext.RequestAborted);
                 DataAccess.Core.Models.User? user = await this.userService.GetAsync(command.UserId, HttpContext.RequestAborted);
 
                 return Ok(new
@@ -156,8 +157,8 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
                         ExecutedAt = command.CreatedAt,
                         Robot = new CommandDetailsResponse.RobotResponse
                         {
-                            Id = robot?.Id,
-                            NameIdentity = robot?.NameIdentity,
+                            Id = robotModel?.Id,
+                            NameIdentity = robotModel?.NameIdentity,
                             PositionX = command.PositionX,
                             PositionY = command.PositionY,
                             Direction = command.Direction
@@ -188,7 +189,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
     class CommandDetailsResponse
     {
-        public object Id { get; internal set; } = null!;
+        public string Id { get; internal set; } = null!;
         public ECommands Action { get; internal set; }
         public DateTime ExecutedAt { get; internal set; }
         public RobotResponse Robot { get; internal set; } = null!;
@@ -196,7 +197,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
         public class RobotResponse
         {
-            public object? Id { get; internal set; }
+            public string? Id { get; internal set; }
             public string? NameIdentity { get; internal set; }
             public int PositionX { get; internal set; }
             public int PositionY { get; internal set; }
@@ -205,7 +206,7 @@ public class CommandController(BusinessLogic.CommandService commandService, Busi
 
         public class UserResponse
         {
-            public object? Id { get; internal set; }
+            public string? Id { get; internal set; }
             public string? Name { get; internal set; }
             public string? Username { get; internal set; }
         }
